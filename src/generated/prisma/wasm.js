@@ -174,20 +174,40 @@ exports.Prisma.VerificationTokenScalarFieldEnum = {
 
 exports.Prisma.EventScalarFieldEnum = {
   id: 'id',
-  title: 'title',
+  name: 'name',
+  slug: 'slug',
   description: 'description',
-  date: 'date',
-  contactOrg: 'contactOrg',
+  organiserEmail: 'organiserEmail',
+  organiserContact: 'organiserContact',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  stock: 'stock',
+  price: 'price',
+  image: 'image',
+  trending: 'trending',
+  category: 'category',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TicketScalarFieldEnum = {
   id: 'id',
-  qrToken: 'qrToken',
-  userId: 'userId',
-  eventId: 'eventId',
+  code: 'code',
+  quantity: 'quantity',
   used: 'used',
+  eventId: 'eventId',
+  userId: 'userId',
+  isExpired: 'isExpired',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  orderId: 'orderId'
+};
+
+exports.Prisma.OrderScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  total: 'total',
+  reference: 'reference',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -218,7 +238,8 @@ exports.Prisma.ModelName = {
   FailedLoginAttempt: 'FailedLoginAttempt',
   VerificationToken: 'VerificationToken',
   Event: 'Event',
-  Ticket: 'Ticket'
+  Ticket: 'Ticket',
+  Order: 'Order'
 };
 
 /**

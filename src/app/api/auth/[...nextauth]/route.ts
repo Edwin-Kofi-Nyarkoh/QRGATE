@@ -3,13 +3,14 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import type { NextAuthOptions } from "next-auth";
 
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import { transporter } from "@/lib/nodemailer";
 import { getClientInfo } from "@/lib/getClientInfo";
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = ({
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
@@ -125,4 +126,6 @@ const handler = NextAuth({
     error: "/error"
   },
 });
+
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
