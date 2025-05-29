@@ -2,7 +2,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { code } = await req.json();
+
+    const {searchParams} = new URL(req.url)
+
+    const code = searchParams.get("code");
 
     if (!code) {
       return new Response("Missing code", { status: 400 });
@@ -77,3 +80,4 @@ export async function POST(req: Request) {
     return new Response("Server error", { status: 500 });
   }
 }
+

@@ -68,7 +68,7 @@ export default function EventUploadForm() {
     formData.append("image", image);
 
     try {
-      const res = await fetch("/api/productUpload", {
+      const res = await fetch("/api/event/eventUpload", {
         method: "POST",
         body: formData,
       });
