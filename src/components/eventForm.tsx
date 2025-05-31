@@ -90,7 +90,7 @@ export default function EventUploadForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto p-6 rounded shadow space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto mt-28 p-6 rounded shadow space-y-4">
       <h2 className="text-xl font-bold">Upload New Product</h2>
 
       <input
@@ -134,12 +134,30 @@ export default function EventUploadForm() {
       />
       {errors.stock && <p className="text-red-500 text-sm">{errors.stock.message}</p>}
 
-      <input
-        {...register("category")}
-        placeholder="Category (optional)"
-        className="w-full border p-2 rounded"
-      />
-      {errors.category && <p className="text-red-500 text-sm">{errors.category.message}</p>}
+      <select
+  {...register("category")}
+  className="w-full border p-2 rounded dark:bg-black dark:text-white"
+  defaultValue="" // for optional field
+>
+  <option value="" >
+    Select a category (optional)
+  </option>
+  <option value="Education & Learning">Education & Learning</option>
+  <option value="Tech & Innovation">Tech & Innovation</option>
+  <option value="Social & Entertainment">Social & Entertainment</option>
+  <option value="Music & Performance">Music & Performance</option>
+  <option value="Health & Wellness">Health & Wellness</option>
+  <option value="Career & Personal Growth">Career & Personal Growth</option>
+  <option value="Business & Networking">Business & Networking</option>
+  <option value="Family & Kids">Family & Kids</option>
+  <option value="Politics & Causes">Politics & Causes</option>
+  <option value="Spirituality & Faith">Spirituality & Faith</option>
+  {/* Add more options here */}
+</select>
+
+{errors.category && (
+  <p className="text-red-500 text-sm">{errors.category.message}</p>
+)}
 
       <input
         {...register("organiserEmail")}
@@ -180,7 +198,7 @@ export default function EventUploadForm() {
       <button
         type="submit"
         disabled={loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        className="text-white px-4 py-2 rounded bg-green-600 hover:bg-green-700"
       >
         {loading ? "Uploading..." : "Upload Product"}
       </button>

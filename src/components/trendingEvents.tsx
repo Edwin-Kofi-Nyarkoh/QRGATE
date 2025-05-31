@@ -78,6 +78,8 @@ export default function Trending({ limit }: TrendingSectionProps) {
             startDate={event.startDate}
             endDate={event.endDate}
             quantity={selectedQuantity[event.id] || 1}
+            stock={event.stock}
+            
             onQuantityChange={(val) =>
               setSelectedQuantity((prev) => ({ ...prev, [event.id]: val }))
             }

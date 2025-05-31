@@ -20,6 +20,7 @@ interface CardProps {
   startDate: string;
   endDate: string;
   quantity: number;
+  stock: number;
   onQuantityChange: (value: number) => void;
   onAddToCart: () => void;
 }
@@ -35,6 +36,7 @@ const Card: React.FC<CardProps> = ({
   startDate,
   endDate,
   quantity,
+  stock,
   onQuantityChange,
   onAddToCart,
 }) => {
@@ -101,6 +103,12 @@ const Card: React.FC<CardProps> = ({
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => onQuantityChange(parseInt(e.target.value))}
           className="w-14 h-7 text-xs px-1 border-gray-300"
+        />
+        <Label className="text-xs">Stock (Available Tickets)</Label>
+        <Input
+        type="number"
+        value={stock}
+        disabled
         />
         <Button
           onClick={(e) => {

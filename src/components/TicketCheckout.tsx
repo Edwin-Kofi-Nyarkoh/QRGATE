@@ -17,7 +17,7 @@ export default function TicketCheckout() {
   const handleSuccess = async ({ reference }: { reference: string }) => {
         const tickets = cart.map(item=>({
           eventId: item.eventId,
-          quantity: item.quantity
+          quantity: item.quantity 
         }));
 
     await fetch("/api/tickets", {
