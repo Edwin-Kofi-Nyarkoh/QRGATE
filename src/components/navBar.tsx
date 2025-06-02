@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useTicketCart } from './cart/TicketCartContext';
 import { useRouter } from "next/navigation";
@@ -21,6 +21,7 @@ const Navbar = () => {
     const [query, setQuery] = useState('');
   const [results, setResults] = useState<EventResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const { data: session, status } = useSession();
   const { cart } = useTicketCart();
@@ -52,6 +53,21 @@ const Navbar = () => {
 return () => clearTimeout(timeout);
 }, [query]);
 
+useEffect(() => {
+  const handleClickOutside = (e: MouseEvent) => {
+    const target = e.target as Node;
+    if (searchRef.current && !searchRef.current.contains(target)) {
+      setQuery('');
+      setResults([]);
+    }
+  };
+
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, []);
+
 if (status === 'loading') return null;
 
   const handleSelect = (slug: string) => {
@@ -59,6 +75,7 @@ if (status === 'loading') return null;
     setResults([]);
     router.push(`/events/${slug}`);
   };
+  
 
   return (
     <header className="bg-white/90 dark:bg-gray-900/60 text-black dark:text-white backdrop-blur-md px-6 py-3 flex items-center justify-between fixed top-0 left-0 w-full z-50 shadow-sm transition-all duration-500">
@@ -73,7 +90,7 @@ if (status === 'loading') return null;
         </div>
 
         {/* Search */}
-        <div className="flex-grow max-w-xs sm:max-w-sm lg:max-w-md">
+        <div ref={searchRef} className="flex-grow max-w-xs sm:max-w-sm lg:max-w-md">
           <Input
             placeholder="Search events..."
             className="w-full bg-transparent border border-gray-300 dark:border-gray-700 text-black dark:text-white transition-all duration-300"
@@ -86,12 +103,12 @@ if (status === 'loading') return null;
         setQuery('');
         setResults([]);
       }}
-      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:hover:text-white"
+      className="absolute right-[600px] top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:hover:text-white"
     >
       ×
     </button>
   )}
-          {loading && <p className="text-sm text-gray-400 mt-4">Searching...</p>}
+          {loading && <p className="absolute text-sm text-gray-400 mt-4">Searching...</p>}
           {results.length > 0 && (
         <ul className="absolute w-full border mt-4 rounded shadow z-50 max-h-60 overflow-y-auto">
           {results.map((event) => (

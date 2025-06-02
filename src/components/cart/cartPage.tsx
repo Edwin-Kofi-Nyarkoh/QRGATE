@@ -26,7 +26,7 @@ export default function CartPage() {
               <Card key={item.eventId} className="shadow-md rounded-lg">
                 <CardHeader>
                   <h2 className="text-lg font-semibold">{item.eventName}</h2>
-                  <p className="text-gray-500">₦{item.price / 100} each</p>
+                  <p className="text-gray-500">GHS {item.price} each</p>
                 </CardHeader>
                 <CardContent className="flex items-center gap-4">
                   <Label htmlFor={`quantity-${item.eventId}`} className="text-sm">Quantity</Label>
@@ -55,7 +55,7 @@ export default function CartPage() {
               </Card>
             ))}
           </div>
-          <p className="font-bold text-lg mt-6">Total: ₦{total / 100}</p>
+          <p className="font-bold text-lg mt-6">Total: GHS {total}</p>
           <Button className="mt-4 w-full bg-green-500" onClick={() => router.push("/checkout")}>
             Proceed to Checkout
           </Button>
