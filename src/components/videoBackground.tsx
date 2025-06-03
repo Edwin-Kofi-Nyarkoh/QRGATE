@@ -30,7 +30,7 @@ export default function VideoBackground() {
   }, []);
 
   return (
-    <div className="h-[700px] md:h-[800px] w-full overflow-hidden relative">
+    <div className="h-[700px] md:h-[750px] w-full overflow-hidden relative">
       {/* Video Background */}
       <video
         className="absolute top-0 left-0 w-full h-full object-cover"
@@ -40,7 +40,7 @@ export default function VideoBackground() {
         playsInline
         onCanPlay={() => setVideoLoaded(true)}
       >
-        <source src="https://res.cloudinary.com/dggaqzud0/video/upload/v1748872872/3722010-hd_1920_1080_24fps_kh6jef.mp4" />
+        <source src="https://res.cloudinary.com/dggaqzud0/video/upload/v1748872872/3722010-hd_1920_1080_24fps_kh6jef.mp4" type="video/mp4" />
       </video>
 
       {/* Fallback Image (only shown if video isn't loaded) */}

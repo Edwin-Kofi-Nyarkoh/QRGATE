@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTicketCart } from "@/components/cart/TicketCartContext";
 import Card from "./card";
+import Loading from "@/app/loading";
 
 interface Event {
   id: number;
@@ -46,7 +47,7 @@ export default function Trending({ limit }: TrendingSectionProps) {
   }, []);
 
   if (loading) {
-    return <p className="text-center mt-10">Loading trending events...</p>;
+    return <Loading />;
   }
 
   const displayedEvents = limit ? events.slice(0, limit) : events;
