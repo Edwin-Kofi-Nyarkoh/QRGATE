@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <>
     <VideoBackground />
-    <div className="my-12">
+    <div className="my-8">
       < Trending/>
     </div>
     <Services />

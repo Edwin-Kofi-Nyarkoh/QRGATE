@@ -7,6 +7,7 @@ import { useTicketCart } from "@/components/cart/TicketCartContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Loading from "@/app/loading";
 
 interface Event {
     id: number;
@@ -51,7 +52,7 @@ export default function EventDetailsPage() {
   };
 
   if (!event) {
-    return <div className="p-6 text-center">Loading event...</div>;
+    return <Loading />
   }
 
   return (

@@ -50,7 +50,7 @@ export default function Services() {
       </div>
       <div className="flex flex-col md:flex-row justify-center w-full p-6 gap-8 relative px-6 md:px-16">
         {/* Left: Video */}
-        <div className="w-full md:w-1/2 h-[400px] relative flex items-center justify-center">
+        <div className="w-full md:w-1/2 h-[450px] relative flex items-center justify-center">
           {/* Fallback Image if video isn't ready */}
           {!canPlay && (
             <Image
@@ -81,10 +81,10 @@ export default function Services() {
         </div>
 
         {/* Right: Text List */}
-        <div className="w-full md:w-1/2 space-y-4">
+        <div className="w-full dark:bg-gray-900 p-4 rounded-2xl md:w-1/2 space-y-4">
         <div className="mt-0">
           <h2 className="text-xl font-bold mb-2">Why Choose Us?</h2>
-          <ul className="list-disc list-inside text-gray-700">
+          <ul className="list-disc list-inside text-gray-700 dark:text-white">
             {services.map((point, index) => (
               <li key={index}>{point}</li>
             ))}
@@ -97,7 +97,7 @@ export default function Services() {
             modules={[Pagination, Autoplay]}
             spaceBetween={20}
             slidesPerView={1}
-            autoplay={{delay: 4000, disableOnInteraction: true, pauseOnMouseEnter: true}}
+            autoplay={{delay: 5000, disableOnInteraction: true, pauseOnMouseEnter: true}}
             pagination={{ clickable: true }}
             className="w-full"
           >
@@ -112,12 +112,12 @@ export default function Services() {
                     className="mx-auto rounded-full mb-2"
                   />
                   <h4 className="text-lg font-bold">{t.name}</h4>
-                  <p className="text-sm text-gray-500">{t.role}</p>
-                  <p className="mt-2 text-gray-700">{t.message}</p>
+                  <p className="text-sm text-gay-500">{t.role}</p>
+                  <p className="mt-2 text-gay-700">{t.message}</p>
                 </div>
               </SwiperSlide>
             ))}
-            <div className="swiper-pagination mt-6 !static" />
+            <div className="swiper-pagination mt-8 !static" />
           </Swiper>
         </div>
         </div>

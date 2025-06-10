@@ -57,7 +57,7 @@ export default function Footer() {
             QRGATE
           </h2>
           <p className="text-sm">
-            Your one-stop website for Tickets, all trending and Popular events are here 😁.
+            Your one-stop website for Tickets, all trending and Popular events are here.
             Affordable & Reliable.
           </p>
         </div>

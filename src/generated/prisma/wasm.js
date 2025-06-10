@@ -198,6 +198,7 @@ exports.Prisma.TicketScalarFieldEnum = {
   eventId: 'eventId',
   userId: 'userId',
   isExpired: 'isExpired',
+  qrCodeData: 'qrCodeData',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   orderId: 'orderId'

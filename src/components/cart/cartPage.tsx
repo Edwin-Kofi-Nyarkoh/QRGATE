@@ -57,7 +57,7 @@ export default function CartPage() {
           </div>
           <p className="font-bold text-lg mt-6">Total: GHS {total}</p>
           <Button className="mt-4 w-full bg-green-500" onClick={() => router.push("/checkout")}>
-            Proceed to Checkout
+            Proceed to Buy
           </Button>
         </>
       )}

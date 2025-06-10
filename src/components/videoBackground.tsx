@@ -14,7 +14,7 @@ const carouselTexts = [
 const subTexts = [
   { text: "Quality you can trust.", delay: 1000, opacity: 0.8 },
   { text: "Handpicked Events just for you.", delay: 2000, opacity: 0.6 },
-  { text: "Fast ticketing😁 & great service.", delay: 3000, opacity: 0.7 },
+  { text: "Fast ticketing & great service.", delay: 3000, opacity: 0.7 },
   { text: "Your satisfaction, our priority!", delay: 4000, opacity: 0.5 },
 ];
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+//import { useSession } from "next-auth/react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import clsx from "clsx";
@@ -12,7 +12,7 @@ const routes = [
   { label: "Home", path: "/" },
   { label: "Events", path: "/events" },
   { label: "Trending Events", path: "/event/trending" },
-  { label: "My Tickets (Purchased)", path: "/my-tickets" },
+  { label: "My Tickets (Purchased)", path: "/purchasedTickets" },
   { label: "Orders", path: "/orders" },
   { label: "FAQ's", path: "/admin",},
 ];
@@ -23,7 +23,7 @@ const reStrictedRoutes = [
 ]
 
 export default function SideBar() {
-  const { data: session } = useSession();
+  //const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
@@ -34,10 +34,10 @@ export default function SideBar() {
     setIsOpen((prev) => !prev);
   };
   const handleClick = (path:string) => {
-    if (!session) {
-      alert("Please log in");
-      return;
-    }
+    // if (!session) {
+    //   alert("Please log in");
+    //   return;
+    // }
     router.push(path);
     setIsOpen(false);
   };

@@ -8366,6 +8366,7 @@ export namespace Prisma {
     eventId: number | null
     userId: string | null
     isExpired: boolean | null
+    qrCodeData: string | null
     createdAt: Date | null
     updatedAt: Date | null
     orderId: string | null
@@ -8379,6 +8380,7 @@ export namespace Prisma {
     eventId: number | null
     userId: string | null
     isExpired: boolean | null
+    qrCodeData: string | null
     createdAt: Date | null
     updatedAt: Date | null
     orderId: string | null
@@ -8392,6 +8394,7 @@ export namespace Prisma {
     eventId: number
     userId: number
     isExpired: number
+    qrCodeData: number
     createdAt: number
     updatedAt: number
     orderId: number
@@ -8419,6 +8422,7 @@ export namespace Prisma {
     eventId?: true
     userId?: true
     isExpired?: true
+    qrCodeData?: true
     createdAt?: true
     updatedAt?: true
     orderId?: true
@@ -8432,6 +8436,7 @@ export namespace Prisma {
     eventId?: true
     userId?: true
     isExpired?: true
+    qrCodeData?: true
     createdAt?: true
     updatedAt?: true
     orderId?: true
@@ -8445,6 +8450,7 @@ export namespace Prisma {
     eventId?: true
     userId?: true
     isExpired?: true
+    qrCodeData?: true
     createdAt?: true
     updatedAt?: true
     orderId?: true
@@ -8545,6 +8551,7 @@ export namespace Prisma {
     eventId: number
     userId: string
     isExpired: boolean
+    qrCodeData: string | null
     createdAt: Date
     updatedAt: Date
     orderId: string
@@ -8577,6 +8584,7 @@ export namespace Prisma {
     eventId?: boolean
     userId?: boolean
     isExpired?: boolean
+    qrCodeData?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     orderId?: boolean
@@ -8593,6 +8601,7 @@ export namespace Prisma {
     eventId?: boolean
     userId?: boolean
     isExpired?: boolean
+    qrCodeData?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     orderId?: boolean
@@ -8609,6 +8618,7 @@ export namespace Prisma {
     eventId?: boolean
     userId?: boolean
     isExpired?: boolean
+    qrCodeData?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     orderId?: boolean
@@ -8625,12 +8635,13 @@ export namespace Prisma {
     eventId?: boolean
     userId?: boolean
     isExpired?: boolean
+    qrCodeData?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     orderId?: boolean
   }
 
-  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "quantity" | "used" | "eventId" | "userId" | "isExpired" | "createdAt" | "updatedAt" | "orderId", ExtArgs["result"]["ticket"]>
+  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "quantity" | "used" | "eventId" | "userId" | "isExpired" | "qrCodeData" | "createdAt" | "updatedAt" | "orderId", ExtArgs["result"]["ticket"]>
   export type TicketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -8662,6 +8673,7 @@ export namespace Prisma {
       eventId: number
       userId: string
       isExpired: boolean
+      qrCodeData: string | null
       createdAt: Date
       updatedAt: Date
       orderId: string
@@ -9098,6 +9110,7 @@ export namespace Prisma {
     readonly eventId: FieldRef<"Ticket", 'Int'>
     readonly userId: FieldRef<"Ticket", 'String'>
     readonly isExpired: FieldRef<"Ticket", 'Boolean'>
+    readonly qrCodeData: FieldRef<"Ticket", 'String'>
     readonly createdAt: FieldRef<"Ticket", 'DateTime'>
     readonly updatedAt: FieldRef<"Ticket", 'DateTime'>
     readonly orderId: FieldRef<"Ticket", 'String'>
@@ -10760,6 +10773,7 @@ export namespace Prisma {
     eventId: 'eventId',
     userId: 'userId',
     isExpired: 'isExpired',
+    qrCodeData: 'qrCodeData',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     orderId: 'orderId'
@@ -11349,6 +11363,7 @@ export namespace Prisma {
     eventId?: IntFilter<"Ticket"> | number
     userId?: StringFilter<"Ticket"> | string
     isExpired?: BoolFilter<"Ticket"> | boolean
+    qrCodeData?: StringNullableFilter<"Ticket"> | string | null
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeFilter<"Ticket"> | Date | string
     orderId?: StringFilter<"Ticket"> | string
@@ -11365,6 +11380,7 @@ export namespace Prisma {
     eventId?: SortOrder
     userId?: SortOrder
     isExpired?: SortOrder
+    qrCodeData?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     orderId?: SortOrder
@@ -11384,6 +11400,7 @@ export namespace Prisma {
     eventId?: IntFilter<"Ticket"> | number
     userId?: StringFilter<"Ticket"> | string
     isExpired?: BoolFilter<"Ticket"> | boolean
+    qrCodeData?: StringNullableFilter<"Ticket"> | string | null
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeFilter<"Ticket"> | Date | string
     orderId?: StringFilter<"Ticket"> | string
@@ -11400,6 +11417,7 @@ export namespace Prisma {
     eventId?: SortOrder
     userId?: SortOrder
     isExpired?: SortOrder
+    qrCodeData?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     orderId?: SortOrder
@@ -11421,6 +11439,7 @@ export namespace Prisma {
     eventId?: IntWithAggregatesFilter<"Ticket"> | number
     userId?: StringWithAggregatesFilter<"Ticket"> | string
     isExpired?: BoolWithAggregatesFilter<"Ticket"> | boolean
+    qrCodeData?: StringNullableWithAggregatesFilter<"Ticket"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Ticket"> | Date | string
     orderId?: StringWithAggregatesFilter<"Ticket"> | string
@@ -12002,6 +12021,7 @@ export namespace Prisma {
     quantity: number
     used?: number
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutTicketsInput
@@ -12017,6 +12037,7 @@ export namespace Prisma {
     eventId: number
     userId: string
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orderId: string
@@ -12028,6 +12049,7 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     used?: IntFieldUpdateOperationsInput | number
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutTicketsNestedInput
@@ -12043,6 +12065,7 @@ export namespace Prisma {
     eventId?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orderId?: StringFieldUpdateOperationsInput | string
@@ -12056,6 +12079,7 @@ export namespace Prisma {
     eventId: number
     userId: string
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orderId: string
@@ -12067,6 +12091,7 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     used?: IntFieldUpdateOperationsInput | number
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12079,6 +12104,7 @@ export namespace Prisma {
     eventId?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orderId?: StringFieldUpdateOperationsInput | string
@@ -12685,6 +12711,7 @@ export namespace Prisma {
     eventId?: SortOrder
     userId?: SortOrder
     isExpired?: SortOrder
+    qrCodeData?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     orderId?: SortOrder
@@ -12704,6 +12731,7 @@ export namespace Prisma {
     eventId?: SortOrder
     userId?: SortOrder
     isExpired?: SortOrder
+    qrCodeData?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     orderId?: SortOrder
@@ -12717,6 +12745,7 @@ export namespace Prisma {
     eventId?: SortOrder
     userId?: SortOrder
     isExpired?: SortOrder
+    qrCodeData?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     orderId?: SortOrder
@@ -13651,6 +13680,7 @@ export namespace Prisma {
     quantity: number
     used?: number
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutTicketsInput
@@ -13664,6 +13694,7 @@ export namespace Prisma {
     used?: number
     eventId: number
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orderId: string
@@ -13794,6 +13825,7 @@ export namespace Prisma {
     eventId?: IntFilter<"Ticket"> | number
     userId?: StringFilter<"Ticket"> | string
     isExpired?: BoolFilter<"Ticket"> | boolean
+    qrCodeData?: StringNullableFilter<"Ticket"> | string | null
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
     updatedAt?: DateTimeFilter<"Ticket"> | Date | string
     orderId?: StringFilter<"Ticket"> | string
@@ -13805,6 +13837,7 @@ export namespace Prisma {
     quantity: number
     used?: number
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutTicketsInput
@@ -13818,6 +13851,7 @@ export namespace Prisma {
     used?: number
     userId: string
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orderId: string
@@ -14122,6 +14156,7 @@ export namespace Prisma {
     quantity: number
     used?: number
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutTicketsInput
@@ -14136,6 +14171,7 @@ export namespace Prisma {
     eventId: number
     userId: string
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -14248,6 +14284,7 @@ export namespace Prisma {
     used?: number
     eventId: number
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orderId: string
@@ -14345,6 +14382,7 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     used?: IntFieldUpdateOperationsInput | number
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutTicketsNestedInput
@@ -14358,6 +14396,7 @@ export namespace Prisma {
     used?: IntFieldUpdateOperationsInput | number
     eventId?: IntFieldUpdateOperationsInput | number
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orderId?: StringFieldUpdateOperationsInput | string
@@ -14370,6 +14409,7 @@ export namespace Prisma {
     used?: IntFieldUpdateOperationsInput | number
     eventId?: IntFieldUpdateOperationsInput | number
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orderId?: StringFieldUpdateOperationsInput | string
@@ -14382,6 +14422,7 @@ export namespace Prisma {
     used?: number
     userId: string
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     orderId: string
@@ -14393,6 +14434,7 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     used?: IntFieldUpdateOperationsInput | number
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutTicketsNestedInput
@@ -14406,6 +14448,7 @@ export namespace Prisma {
     used?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orderId?: StringFieldUpdateOperationsInput | string
@@ -14418,6 +14461,7 @@ export namespace Prisma {
     used?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orderId?: StringFieldUpdateOperationsInput | string
@@ -14431,6 +14475,7 @@ export namespace Prisma {
     eventId: number
     userId: string
     isExpired?: boolean
+    qrCodeData?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -14441,6 +14486,7 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     used?: IntFieldUpdateOperationsInput | number
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTicketsNestedInput
@@ -14455,6 +14501,7 @@ export namespace Prisma {
     eventId?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -14467,6 +14514,7 @@ export namespace Prisma {
     eventId?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
     isExpired?: BoolFieldUpdateOperationsInput | boolean
+    qrCodeData?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

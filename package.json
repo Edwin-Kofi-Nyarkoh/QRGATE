@@ -34,6 +34,7 @@
     "react-hook-form": "^7.56.4",
     "react-icons": "^5.5.0",
     "react-paystack": "^6.0.0",
+    "react-qr-reader": "^3.0.0-beta-1",
     "slugify": "^1.6.6",
     "swiper": "^11.2.8",
     "tailwind-merge": "^3.3.0",
