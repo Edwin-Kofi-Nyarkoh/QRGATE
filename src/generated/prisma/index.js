@@ -35,12 +35,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.8.2
- * Query Engine version: 2060c79ba17c6bb9f5823312b6f6b7f4a845738e
+ * Prisma Client JS version: 6.9.0
+ * Query Engine version: 81e4af48011447c3cc503a190e86995b66d2a28e
  */
 Prisma.prismaVersion = {
-  client: "6.8.2",
-  engine: "2060c79ba17c6bb9f5823312b6f6b7f4a845738e"
+  client: "6.9.0",
+  engine: "81e4af48011447c3cc503a190e86995b66d2a28e"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -226,7 +226,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\EDWIN\\OneDrive\\Desktop\\QRGate\\qrgate\\src\\generated\\prisma",
+      "value": "C:\\Users\\masoo\\OneDrive\\Desktop\\Projects\\QRGATE\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -240,7 +240,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\EDWIN\\OneDrive\\Desktop\\QRGate\\qrgate\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\masoo\\OneDrive\\Desktop\\Projects\\QRGATE\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -248,12 +248,13 @@ const config = {
     "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
-  "clientVersion": "6.8.2",
-  "engineVersion": "2060c79ba17c6bb9f5823312b6f6b7f4a845738e",
+  "clientVersion": "6.9.0",
+  "engineVersion": "81e4af48011447c3cc503a190e86995b66d2a28e",
   "datasourceNames": [
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -262,8 +263,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nenum Role {\n  USER\n  ADMIN\n}\n\nmodel Account {\n  id                String  @id @default(cuid())\n  userId            String  @map(\"user_id\")\n  type              String\n  provider          String\n  providerAccountId String  @map(\"provider_account_id\")\n  refresh_token     String? @db.Text\n  access_token      String? @db.Text\n  expires_at        Int?\n  token_type        String?\n  scope             String?\n  id_token          String? @db.Text\n  session_state     String?\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([provider, providerAccountId])\n  @@map(\"accounts\")\n}\n\nmodel Session {\n  id           String   @id @default(cuid())\n  sessionToken String   @unique @map(\"session_token\")\n  userId       String   @map(\"user_id\")\n  expires      DateTime\n  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@map(\"sessions\")\n}\n\nmodel User {\n  id            String    @id @default(cuid())\n  name          String?\n  email         String?   @unique\n  password      String\n  emailVerified DateTime? @map(\"email_verified\")\n  image         String?\n  otp           String?\n  passwordUuid  String?\n  role          Role      @default(USER)\n  provider      String?\n  otpExpiresAt  DateTime?\n  verified      Boolean   @default(false)\n  accounts      Account[]\n  sessions      Session[]\n\n  // Relations with Tickets\n  orders  Order[] // ✅ One user → many orders\n  tickets Ticket[]\n\n  @@map(\"users\")\n}\n\nmodel FailedLoginAttempt {\n  id        String   @id @default(cuid())\n  email     String\n  ipAddress String\n  success   Boolean\n  userAgent String\n  createdAt DateTime @default(now())\n}\n\nmodel VerificationToken {\n  identifier String\n  token      String\n  expires    DateTime\n\n  @@unique([identifier, token])\n  @@map(\"verification_tokens\")\n}\n\nmodel Event {\n  id               Int      @id @default(autoincrement())\n  name             String\n  slug             String   @unique\n  description      String\n  organiserEmail   String // for \"mailto:\"\n  organiserContact String // for \"tel:\"\n  startDate        DateTime\n  endDate          DateTime\n  stock            Int\n  price            Float\n  image            String\n  trending         Boolean  @default(false)\n  category         String?\n  createdAt        DateTime @default(now())\n  updatedAt        DateTime @updatedAt\n  tickets          Ticket[]\n}\n\nmodel Ticket {\n  id         String   @id @default(cuid())\n  code       String   @unique // UUID for QR\n  quantity   Int // How many total uses\n  used       Int      @default(0) // How many times it's been scanned\n  eventId    Int\n  userId     String\n  isExpired  Boolean  @default(false) // Automatically mark when used === quantity\n  qrCodeData String?\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n\n  order   Order  @relation(fields: [orderId], references: [id])\n  orderId String\n\n  user  User  @relation(fields: [userId], references: [id])\n  event Event @relation(fields: [eventId], references: [id])\n}\n\nmodel Order {\n  id        String   @id @default(cuid())\n  user      User     @relation(fields: [userId], references: [id])\n  userId    String\n  tickets   Ticket[]\n  total     Float\n  reference String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "ba418e50cca0af4bf4d3f445fc9d0a73062b14fb0dc8e17b99a0a39d63d41638",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nenum Role {\n  USER\n  ADMIN\n}\n\nmodel Account {\n  id                String  @id @default(cuid())\n  userId            String  @map(\"user_id\")\n  type              String\n  provider          String\n  providerAccountId String  @map(\"provider_account_id\")\n  refresh_token     String? @db.Text\n  access_token      String? @db.Text\n  expires_at        Int?\n  token_type        String?\n  scope             String?\n  id_token          String? @db.Text\n  session_state     String?\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([provider, providerAccountId])\n  @@map(\"accounts\")\n}\n\nmodel Session {\n  id           String   @id @default(cuid())\n  sessionToken String   @unique @map(\"session_token\")\n  userId       String   @map(\"user_id\")\n  expires      DateTime\n  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@map(\"sessions\")\n}\n\nmodel User {\n  id            String    @id @default(cuid())\n  name          String?\n  email         String?   @unique\n  password      String\n  emailVerified DateTime? @map(\"email_verified\")\n  image         String?\n  otp           String?\n  passwordUuid  String?\n  role          Role      @default(USER)\n  provider      String?\n  otpExpiresAt  DateTime?\n  verified      Boolean   @default(false)\n  accounts      Account[]\n  sessions      Session[]\n\n  // Relations with Tickets\n  orders  Order[] // One user → many orders\n  tickets Ticket[]\n\n  @@map(\"users\")\n}\n\nmodel FailedLoginAttempt {\n  id        String   @id @default(cuid())\n  email     String\n  ipAddress String\n  success   Boolean\n  userAgent String\n  createdAt DateTime @default(now())\n}\n\nmodel VerificationToken {\n  identifier String\n  token      String\n  expires    DateTime\n\n  @@unique([identifier, token])\n  @@map(\"verification_tokens\")\n}\n\nmodel Event {\n  id               Int      @id @default(autoincrement())\n  name             String\n  slug             String   @unique\n  description      String\n  organiserEmail   String // for \"mailto:\"\n  organiserContact String // for \"tel:\"\n  startDate        DateTime\n  endDate          DateTime\n  stock            Int\n  price            Float\n  image            String\n  trending         Boolean  @default(false)\n  category         String?\n  createdAt        DateTime @default(now())\n  updatedAt        DateTime @updatedAt\n  tickets          Ticket[]\n}\n\nmodel Ticket {\n  id         String   @id @default(cuid())\n  code       String   @unique // UUID for QR\n  quantity   Int // How many total uses\n  used       Int      @default(0) // How many times it's been scanned\n  eventId    Int\n  userId     String\n  isExpired  Boolean  @default(false) // Automatically mark when used === quantity\n  qrCodeData String?\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n\n  order   Order  @relation(fields: [orderId], references: [id])\n  orderId String\n\n  user  User  @relation(fields: [userId], references: [id])\n  event Event @relation(fields: [eventId], references: [id])\n}\n\nmodel Order {\n  id        String   @id @default(cuid())\n  user      User     @relation(fields: [userId], references: [id])\n  userId    String\n  tickets   Ticket[]\n  total     Float\n  reference String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n",
+  "inlineSchemaHash": "a7ad875bb4a9307ca07d3d28a5ff182655272029346907c1aec02d6adc4d81c9",
   "copyEngine": true
 }
 
