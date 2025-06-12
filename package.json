@@ -1,5 +1,19 @@
 {
   "name": "qrgates-ticket-booking-app",
+  "description": "A ticket booking application with QR code generation and scanning features.",
+  "keywords": [
+    "ticket-booking",
+    "qr-code",
+    "nextjs",
+    "react",
+    "radix-ui",
+    "auth",
+    "prisma",
+    "zustand",
+    "tailwindcss",
+    "sonner",
+    "recharts"
+  ],
   "version": "0.1.0",
   "private": true,
   "scripts": {
