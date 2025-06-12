@@ -1,12 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -14,23 +8,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  ADMIN
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  phone         String?
+  address       String?
+  gender        String?
+  birthday      DateTime?
+  role          Role      @default(USER)
+  isOrganizer   Boolean   @default(false)
+  profileImage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  tickets       Ticket[]
+  events        Event[]
+  orders        Order[]
+  accounts      Account[]
+  sessions      Session[]
+  
+  // NextAuth
+  emailVerified DateTime?
+
+  @@map("users")
 }
 
 model Account {
   id                 String  @id @default(cuid())
-  userId             String  @map("user_id")
+  userId             String
   type               String
   provider           String
-  providerAccountId  String  @map("provider_account_id")
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
   expires_at         Int?
   token_type         String?
   scope              String?
-  id_token           String? @db.Text
+  id_token           String?  @db.Text
   session_state      String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -41,48 +58,17 @@ model Account {
 
 model Session {
   id           String   @id @default(cuid())
-  sessionToken String   @unique @map("session_token")
-  userId       String   @map("user_id")
+  sessionToken String   @unique
+  userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  password      String
-  emailVerified DateTime? @map("email_verified")
-  image         String?
-  otp           String?  
-  passwordUuid  String? 
-  role      Role @default(USER)
-  provider      String?
-  otpExpiresAt  DateTime? 
-  verified      Boolean  @default(false)
-  accounts      Account[]
-  sessions      Session[]
-
-  // Relations with Tickets
-  orders  Order[]  // One user → many orders
-  tickets       Ticket[]
-  @@map("users")
-}
-
-model FailedLoginAttempt{
-  id          String @id @default(cuid())
-  email       String 
-  ipAddress   String
-  success     Boolean
-  userAgent   String
-  createdAt DateTime @default(now())
-}
-
 model VerificationToken {
   identifier String
-  token      String
+  token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
@@ -90,50 +76,98 @@ model VerificationToken {
 }
 
 model Event {
-  id                Int       @id @default(autoincrement())
-  name              String
-  slug              String    @unique
-  description       String
-  organiserEmail    String   // for "mailto:"
-  organiserContact  String  // for "tel:"
-  startDate        DateTime
-  endDate          DateTime
-  stock             Int
-  price             Float
-  image             String
-  trending          Boolean @default(false)
-  category          String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  tickets           Ticket[]
+  id            String      @id @default(cuid())
+  title         String
+  description   String?
+  category      String
+  location      String
+  startDate     DateTime
+  endDate       DateTime
+  mainImage     String?
+  price         Float
+  totalTickets  Int
+  soldTickets   Int         @default(0)
+  status        EventStatus @default(UPCOMING)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  organizer     User        @relation(fields: [organizerId], references: [id])
+  organizerId   String
+  tickets       Ticket[]
+  orders        Order[]
+  images        EventImage[]
+
+  @@map("events")
+}
+
+model EventImage {
+  id        String   @id @default(cuid())
+  url       String
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("event_images")
 }
 
 model Ticket {
   id        String   @id @default(cuid())
-  code      String   @unique         // UUID for QR
-  quantity  Int                       // How many total uses
-  used      Int      @default(0)     // How many times it's been scanned
-  eventId   Int
-  userId    String
-  isExpired Boolean  @default(false) // Automatically mark when used === quantity
-  qrCodeData String?
+  qrCode    String   @unique
+  type      String   // Standard, VIP, etc.
+  price     Float
+  isUsed    Boolean  @default(false)
+  usedAt    DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  order      Order    @relation(fields: [orderId], references: [id])
-  orderId    String
+  // Relations
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String
 
-  user   User  @relation(fields: [userId], references: [id])
-  event  Event @relation(fields: [eventId], references: [id])
+  @@map("tickets")
 }
 
 model Order {
-  id        String    @id @default(cuid())
-  user      User      @relation(fields: [userId], references: [id])
-  userId    String
-  tickets   Ticket[]
-  total     Float
-  reference String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id            String      @id @default(cuid())
+  total         Float
+  status        OrderStatus @default(PENDING)
+  paymentMethod String?
+  paymentId     String?     // PayStack payment ID
+  reference     String?     // PayStack reference
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  event         Event       @relation(fields: [eventId], references: [id])
+  eventId       String
+  tickets       Ticket[]
+
+  @@map("orders")
+}
+
+enum Role {
+  USER
+  ADMIN
+  ORGANIZER
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  REFUNDED
 }
