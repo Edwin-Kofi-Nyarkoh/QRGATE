@@ -120,7 +120,7 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1
       cloudinary:
-        specifier: latest
+        specifier: ^2.6.1
         version: 2.6.1
       clsx:
         specifier: ^2.1.1
@@ -140,6 +140,9 @@ importers:
       embla-carousel-react:
         specifier: 8.5.1
         version: 8.5.1(react@19.1.0)
+      fs:
+        specifier: 0.0.1-security
+        version: 0.0.1-security
       html5-qrcode:
         specifier: ^2.3.8
         version: 2.3.8
@@ -1622,6 +1625,9 @@ packages:
 
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
+
+  fs@0.0.1-security:
+    resolution: {integrity: sha512-3XY9e1pP0CVEUCdj5BmfIZxRBTSDycnbqhIOGec9QYtmVH2fbLpj86CFWkrNOkt/Fvty4KZG5lTglL9j/gJ87w==}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -3735,6 +3741,8 @@ snapshots:
       mime-types: 2.1.35
 
   fraction.js@4.3.7: {}
+
+  fs@0.0.1-security: {}
 
   fsevents@2.3.3:
     optional: true

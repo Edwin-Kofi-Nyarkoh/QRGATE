@@ -33,8 +33,8 @@ export function Navbar() {
   const { data: user, isLoading: loadingUserSession } = useCurrentUser({
     enabled: !!session,
   });
-  const { getTotalItems } = useCartStore();
-  const cartCount = getTotalItems();
+  const { getCount } = useCartStore();
+  const cartCount = getCount();
 
   return (
     <nav className="bg-slate-800 text-white px-4 py-3 dark:bg-slate-900 dark:text-gray-100">
