@@ -50,7 +50,7 @@ export function CheckoutForm({ order }: CheckoutFormProps) {
 
       const data = await response.json();
 
-      // Redirect to PayStack payment page
+      // Redirect to PayStack payment page without adding duplicate reference
       window.location.href = data.authorization_url;
     } catch (error) {
       console.error("Payment error:", error);

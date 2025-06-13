@@ -68,6 +68,9 @@ export function EventsSection() {
       title: event.title,
       image: event.mainImage || "",
       startDate: event.startDate.toString(),
+      getTotalPrice: function () {
+        return this.price * this.quantity;
+      },
     });
 
     toast.success("Added to cart", {

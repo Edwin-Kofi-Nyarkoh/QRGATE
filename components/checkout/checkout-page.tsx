@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   CheckCircle,
   CreditCard,
@@ -70,14 +69,17 @@ export function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      // Create order
+      // Create order with ticket type information
       const orderResponse = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          items,
+          items: items.map((item) => ({
+            ...item,
+            ticketType: item.ticketType || "Standard", // Ensure ticket type is included
+          })),
           userInfo,
           paymentMethod,
           total: totalPrice,
@@ -90,7 +92,7 @@ export function CheckoutPage() {
 
       const { orders } = await orderResponse.json();
 
-      // Initialize payment
+      // Initialize payment with single reference
       const paymentResponse = await fetch("/api/payments/initialize", {
         method: "POST",
         headers: {
@@ -109,6 +111,8 @@ export function CheckoutPage() {
 
       // Clear cart and redirect to payment
       clearCart();
+
+      // Use the authorization_url directly without adding duplicate reference
       window.location.href = paymentData.authorization_url;
     } catch (error) {
       console.error("Checkout error:", error);
@@ -245,7 +249,8 @@ export function CheckoutPage() {
                           <Image
                             src={
                               item.eventImage ||
-                              "/placeholder.svg?height=48&width=48"
+                              "/placeholder.svg?height=48&width=48" ||
+                              "/placeholder.svg"
                             }
                             alt={item.eventTitle ?? "Event Image"}
                             fill
@@ -254,7 +259,7 @@ export function CheckoutPage() {
                         </div>
                         <div>
                           <p className="font-medium text-sm">
-                            {item.ticketType} Ticket
+                            {item.ticketType || "Standard"} Ticket
                           </p>
                           <p className="text-xs text-gray-600">
                             {item.eventTitle}

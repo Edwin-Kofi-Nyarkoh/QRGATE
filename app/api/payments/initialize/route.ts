@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { initializePayment } from "@/lib/paystack";
 import prisma from "@/lib/prisma";
+import { verifyPayment } from "@/lib/paystack";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,13 +29,22 @@ export async function POST(request: NextRequest) {
 
     // Check if order already has a reference
     if (order.reference) {
-      return NextResponse.json(
-        {
-          error: "Order already has a payment reference",
-          reference: order.reference,
-        },
-        { status: 400 }
-      );
+      // If reference exists, verify if payment was already made
+      try {
+        const paymentStatus = await verifyPayment(order.reference);
+        if (paymentStatus.status === "success") {
+          return NextResponse.json(
+            {
+              error: "Payment already completed",
+              reference: order.reference,
+              authorization_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/verify?reference=${order.reference}`,
+            },
+            { status: 200 }
+          );
+        }
+      } catch (error) {
+        console.log("Error verifying existing payment, creating new one");
+      }
     }
 
     // Generate a unique reference - ensure it's a single string
@@ -47,6 +57,7 @@ export async function POST(request: NextRequest) {
       email: order.user.email,
       amount: order.total,
       reference,
+      // Remove reference from callback URL to avoid duplication
       callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/verify?reference=${reference}`,
       metadata: {
         orderId: order.id,

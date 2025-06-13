@@ -8,6 +8,7 @@ export interface CartItem {
   eventImage?: string;
   eventDate: string;
   eventLocation: string;
+  getTotalPrice: () => number;
   ticketType: string;
   ticketTypeId?: string;
   price: number;
@@ -25,6 +26,7 @@ interface CartStore {
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   getTotal: () => number;
+  getTotalPrice: () => number;
   getCount: () => number;
 }
 
@@ -54,6 +56,13 @@ export const useCartStore = create<CartStore>()(
       removeItem: (id) => {
         const { items } = get();
         set({ items: items.filter((i) => i.id !== id) });
+      },
+      getTotalPrice: () => {
+        const { items } = get();
+        return items.reduce(
+          (total, item) => total + item.price * item.quantity,
+          0
+        );
       },
       updateQuantity: (id, quantity) => {
         const { items } = get();
