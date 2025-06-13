@@ -22,11 +22,11 @@ export function CartSidebar() {
     removeItem,
     updateQuantity,
     getTotalPrice,
-    getCount,
+    getTotalItems,
     clearCart,
   } = useCartStore();
 
-  const totalItems = getCount();
+  const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
 
   if (items.length === 0) {

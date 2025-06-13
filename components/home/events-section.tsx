@@ -4,14 +4,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Calendar,
-  Users,
-  Ticket,
-  Plus,
-  Minus,
-  ShoppingCart,
-} from "lucide-react";
+import { Calendar, Users, Ticket, Plus, Minus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -21,7 +14,7 @@ import {
 } from "@/lib/api/events";
 import { formatDate } from "@/lib/date-utils";
 import { useCartStore } from "@/lib/store/cart-store";
-import type { Event, TicketType } from "@/lib/types/api";
+import type { Event } from "@/lib/types/api";
 import { toast } from "sonner";
 import {
   Select,
@@ -38,45 +31,6 @@ export function EventsSection() {
     useFeaturedEvents();
   const { data: ongoingEvents = [], isLoading: ongoingLoading } =
     useOngoingEvents();
-  const { addItem, items } = useCartStore();
-
-  const handleAddToCart = (event: Event, ticketTypeId?: string) => {
-    // Find the selected ticket type or use the first one
-    const ticketType = event.ticketTypes?.find((t) => t.id === ticketTypeId) ||
-      event.ticketTypes?.[0] || {
-        id: "",
-        name: "Standard",
-        price: event.price,
-        quantity: event.totalTickets - event.soldTickets,
-        soldCount: 0, // Fix: add soldCount property
-      };
-
-    const availableTickets = ticketType.quantity - (ticketType.soldCount || 0);
-
-    addItem({
-      id: `${event.id}-${ticketType.id || "standard"}-${Date.now()}`,
-      eventId: event.id,
-      eventTitle: event.title,
-      eventImage: event.mainImage || undefined,
-      eventDate: event.startDate.toString(),
-      eventLocation: event.location,
-      ticketType: ticketType.name,
-      ticketTypeId: ticketType.id,
-      price: ticketType.price,
-      quantity: 1,
-      maxQuantity: Math.min(10, availableTickets),
-      title: event.title,
-      image: event.mainImage || "",
-      startDate: event.startDate.toString(),
-      getTotalPrice: function () {
-        return this.price * this.quantity;
-      },
-    });
-
-    toast.success("Added to cart", {
-      description: `${event.title} - ${ticketType.name} ticket has been added to your cart`,
-    });
-  };
 
   if (upcomingLoading || featuredLoading || ongoingLoading) {
     return (
@@ -113,12 +67,7 @@ export function EventsSection() {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {ongoingEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  onAddToCart={handleAddToCart}
-                  isLive
-                />
+                <EventCard key={event.id} event={event} isLive />
               ))}
             </div>
           </div>
@@ -144,12 +93,7 @@ export function EventsSection() {
 
             <div className="grid md:grid-cols-2 gap-8">
               {upcomingEvents.slice(0, 2).map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  onAddToCart={handleAddToCart}
-                  featured
-                />
+                <EventCard key={event.id} event={event} featured />
               ))}
             </div>
           </div>
@@ -175,12 +119,14 @@ export function EventsSection() {
 
             <div className="grid md:grid-cols-3 gap-6">
               {featuredEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  onAddToCart={handleAddToCart}
-                />
+                <EventCard key={event.id} event={event} />
               ))}
+            </div>
+
+            <div className="text-center mt-8">
+              <Button variant="outline" asChild>
+                <Link href="/events">DISCOVER EVENTS</Link>
+              </Button>
             </div>
           </div>
         )}
@@ -191,40 +137,70 @@ export function EventsSection() {
 
 interface EventCardProps {
   event: Event;
-  onAddToCart: (event: Event, ticketTypeId?: string) => void;
   featured?: boolean;
   isLive?: boolean;
 }
 
-function EventCard({ event, onAddToCart, featured, isLive }: EventCardProps) {
-  const [selectedTicketType, setSelectedTicketType] = useState<string | null>(
-    event.ticketTypes && event.ticketTypes.length > 0
-      ? event.ticketTypes[0].id
-      : null
-  );
+function EventCard({
+  event,
+  featured = false,
+  isLive = false,
+}: EventCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [showQuantity, setShowQuantity] = useState(false);
-  const { items } = useCartStore();
+  const [selectedTicketTypeId, setSelectedTicketTypeId] = useState<string>(
+    event.ticketTypes && event.ticketTypes.length > 0
+      ? event.ticketTypes[0].id
+      : "standard"
+  );
+  const { addItem, items } = useCartStore();
 
-  // Check if this event is in cart
-  const cartItem = items.find(
+  // Find if this event is already in cart with the selected ticket type
+  const isInCart = items.some(
     (item) =>
-      item.eventId === event.id && item.ticketTypeId === selectedTicketType
+      item.eventId === event.id && item.ticketTypeId === selectedTicketTypeId
   );
 
   // Get the selected ticket type object
-  const ticketType = event.ticketTypes?.find(
-    (type: TicketType) => type.id === selectedTicketType
-  );
+  const selectedTicketType = event.ticketTypes?.find(
+    (type) => type.id === selectedTicketTypeId
+  ) || {
+    id: "standard",
+    name: "Standard",
+    price: event.price,
+    quantity: event.totalTickets,
+    soldCount: event.soldTickets,
+    description: "Standard admission ticket",
+  };
 
-  // Calculate available tickets for the selected type
-  const availableTickets = ticketType
-    ? ticketType.quantity - ticketType.soldCount
-    : event.totalTickets - event.soldTickets;
+  const availableTickets =
+    selectedTicketType.quantity - selectedTicketType.soldCount;
 
   const handleAddToCart = () => {
     if (showQuantity) {
-      onAddToCart(event, selectedTicketType || undefined);
+      addItem({
+        id: `${event.id}-${selectedTicketType.id}-${Date.now()}`,
+        eventId: event.id,
+        eventTitle: event.title,
+        eventImage: event.mainImage || undefined,
+        eventDate: event.startDate.toString(),
+        eventLocation: event.location,
+        ticketType: selectedTicketType.name,
+        ticketTypeId: selectedTicketType.id,
+        price: selectedTicketType.price,
+        quantity: quantity,
+        maxQuantity: Math.min(10, availableTickets),
+        title: event.title,
+        image: event.mainImage || "",
+        startDate: event.startDate.toString(),
+      });
+
+      toast.success("Added to cart", {
+        description: `${quantity} ${selectedTicketType.name} ticket${
+          quantity > 1 ? "s" : ""
+        } for ${event.title}`,
+      });
+
       setShowQuantity(false);
     } else {
       setShowQuantity(true);
@@ -232,7 +208,7 @@ function EventCard({ event, onAddToCart, featured, isLive }: EventCardProps) {
   };
 
   const incrementQuantity = () => {
-    if (quantity < availableTickets) {
+    if (quantity < Math.min(10, availableTickets)) {
       setQuantity(quantity + 1);
     }
   };
@@ -244,91 +220,97 @@ function EventCard({ event, onAddToCart, featured, isLive }: EventCardProps) {
   };
 
   return (
-    <Card
-      className={`overflow-hidden transition-all duration-300 hover:shadow-lg ${
-        featured ? "md:flex" : ""
-      }`}
-    >
-      <div
-        className={`relative ${
-          featured ? "md:w-1/2" : "aspect-[16/9]"
-        } overflow-hidden`}
-      >
-        <Link href={`/events/${event.id}`}>
-          <Image
-            src={event.mainImage || "/placeholder.svg?height=300&width=500"}
-            alt={event.title}
-            fill
-            className="object-cover transition-transform duration-300 hover:scale-105"
-          />
-          {isLive && (
-            <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-              LIVE NOW
-            </div>
-          )}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-            <Badge
-              variant="secondary"
-              className="mb-2 capitalize bg-white/20 backdrop-blur-sm"
-            >
-              {event.category}
-            </Badge>
+    <Card className="overflow-hidden group hover:shadow-lg transition-shadow">
+      <div className="relative">
+        <Image
+          src={event.mainImage || "/placeholder.svg?height=200&width=400"}
+          alt={event.title}
+          width={featured ? 400 : 300}
+          height={featured ? 200 : 200}
+          className="w-full h-48 object-cover"
+        />
+        <div className="absolute top-4 left-4 bg-black/70 text-white p-2 rounded text-center">
+          <div className="text-xl font-bold">
+            {new Date(event.startDate).getDate()}
           </div>
-        </Link>
+          <div className="text-xs">
+            {new Date(event.startDate).toLocaleString("default", {
+              month: "short",
+            })}
+          </div>
+        </div>
+        {isLive && (
+          <div className="absolute top-4 right-4 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            LIVE
+          </div>
+        )}
+        <div className="absolute bottom-4 left-4 flex gap-2">
+          <Badge className="bg-blue-500">
+            {event._count?.tickets || 0} Attendees
+          </Badge>
+          <Badge className="bg-green-500">{event.location}</Badge>
+        </div>
       </div>
-
-      <CardContent
-        className={`p-4 ${featured ? "md:w-1/2 md:p-6" : ""} space-y-4`}
-      >
-        <Link href={`/events/${event.id}`} className="hover:underline">
-          <h3 className="font-bold text-lg line-clamp-2">{event.title}</h3>
-        </Link>
-
-        <div className="flex items-center text-sm text-gray-500 gap-4">
-          <div className="flex items-center gap-1">
-            <Calendar className="w-4 h-4" />
-            {formatDate(event.startDate)}
-          </div>
-          <div className="flex items-center gap-1">
-            <Users className="w-4 h-4" />
-            {event._count?.tickets || 0}
+      <CardContent className="p-4">
+        <h3 className="font-semibold mb-2 line-clamp-2">{event.title}</h3>
+        <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <Users className="w-4 h-4" />
+              {event._count?.tickets || 0}
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" />
+              {formatDate(event.startDate)}
+            </span>
           </div>
         </div>
 
-        {featured && (
-          <p className="text-gray-600 line-clamp-3">{event.description}</p>
-        )}
-
-        <div className="pt-2 space-y-3">
-          {/* Ticket Type Selection */}
-          {event.ticketTypes && event.ticketTypes.length > 1 && (
+        {/* Ticket Type Selection */}
+        {event.ticketTypes && event.ticketTypes.length > 0 && (
+          <div className="mb-3">
             <Select
-              value={selectedTicketType || undefined}
-              onValueChange={(value) => setSelectedTicketType(value)}
+              value={selectedTicketTypeId}
+              onValueChange={(value) => {
+                setSelectedTicketTypeId(value);
+                setShowQuantity(false);
+              }}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full h-8 text-sm">
                 <SelectValue placeholder="Select ticket type" />
               </SelectTrigger>
               <SelectContent>
-                {event.ticketTypes.map((type: TicketType) => (
-                  <SelectItem key={type.id} value={type.id}>
-                    {type.name} - Ghc{type.price.toFixed(2)}
+                {event.ticketTypes.map((type) => (
+                  <SelectItem
+                    key={type.id}
+                    value={type.id}
+                    disabled={type.quantity - type.soldCount <= 0}
+                  >
+                    <div className="flex justify-between w-full">
+                      <span>{type.name}</span>
+                      <span className="font-semibold">
+                        Ghc{type.price.toFixed(2)}
+                      </span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          )}
+          </div>
+        )}
 
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">From</p>
-              <p className="font-bold text-lg">
-                Ghc{(ticketType?.price || event.price).toFixed(2)}
-              </p>
-            </div>
-
-            {showQuantity ? (
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-lg font-bold text-orange-500">
+              Ghc{selectedTicketType.price.toFixed(2)}
+            </span>
+            <p className="text-xs text-gray-500">
+              {availableTickets} tickets left
+            </p>
+          </div>
+          {showQuantity ? (
+            <div className="flex items-center space-x-2">
               <div className="flex items-center border rounded-md">
                 <Button
                   type="button"
@@ -336,11 +318,11 @@ function EventCard({ event, onAddToCart, featured, isLive }: EventCardProps) {
                   size="icon"
                   onClick={decrementQuantity}
                   disabled={quantity <= 1}
-                  className="rounded-r-none h-9 w-9"
+                  className="rounded-r-none h-8 w-8"
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
-                <div className="flex-1 text-center py-1 px-2 min-w-[40px]">
+                <div className="flex-1 text-center py-1 px-2 text-sm">
                   {quantity}
                 </div>
                 <Button
@@ -348,23 +330,26 @@ function EventCard({ event, onAddToCart, featured, isLive }: EventCardProps) {
                   variant="ghost"
                   size="icon"
                   onClick={incrementQuantity}
-                  disabled={quantity >= availableTickets}
-                  className="rounded-l-none h-9 w-9"
+                  disabled={quantity >= Math.min(10, availableTickets)}
+                  className="rounded-l-none h-8 w-8"
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
               </div>
-            ) : (
-              <Button
-                size="sm"
-                onClick={handleAddToCart}
-                disabled={availableTickets <= 0}
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                {cartItem ? "In Cart" : "Add to Cart"}
+              <Button size="sm" onClick={handleAddToCart}>
+                Add
               </Button>
-            )}
-          </div>
+            </div>
+          ) : (
+            <Button
+              size="sm"
+              onClick={handleAddToCart}
+              disabled={availableTickets === 0 || isInCart}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              {isInCart ? "In Cart" : "Add to Cart"}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

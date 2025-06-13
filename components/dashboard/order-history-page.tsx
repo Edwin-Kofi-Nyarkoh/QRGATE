@@ -23,6 +23,7 @@ export function OrderHistoryPage() {
   const { data: orders = [], isLoading } = useUserOrders(
     session?.user?.id || ""
   );
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 

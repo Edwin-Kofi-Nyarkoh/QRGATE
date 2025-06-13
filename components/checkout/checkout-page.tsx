@@ -109,11 +109,11 @@ export function CheckoutPage() {
 
       const paymentData = await paymentResponse.json();
 
+      if (paymentData?.success) {
+        window.location.href = paymentData.data.authorization_url;
+      }
       // Clear cart and redirect to payment
       clearCart();
-
-      // Use the authorization_url directly without adding duplicate reference
-      window.location.href = paymentData.authorization_url;
     } catch (error) {
       console.error("Checkout error:", error);
       setIsProcessing(false);

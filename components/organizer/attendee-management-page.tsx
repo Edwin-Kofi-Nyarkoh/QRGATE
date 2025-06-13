@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useEvent } from "@/lib/api/events";
-import { useTickets } from "@/lib/api/tickets";
+import { useEventTickets } from "@/lib/api/tickets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { formatDate } from "@/lib/date-utils";
+import { Ticket } from "@/lib/services";
 
 interface AttendeeManagementPageProps {
   eventId: string;
@@ -43,15 +44,15 @@ export function AttendeeManagementPage({
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data: event, isLoading: eventLoading } = useEvent(eventId);
-  const { data: ticketsData, isLoading: ticketsLoading } = useTickets({
+  const { data: ticketsData, isLoading: ticketsLoading } = useEventTickets(
     eventId,
-    page: currentPage,
-    limit: 20,
-  });
+    currentPage,
+    20
+  );
 
   const filteredTickets =
     ticketsData?.data?.filter(
-      (ticket) =>
+      (ticket: Ticket) =>
         ticket.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         ticket.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         ticket?.qrCode?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -70,7 +71,7 @@ export function AttendeeManagementPage({
         "Status",
         "Scanned",
       ],
-      ...ticketsData?.data?.map((ticket) => [
+      ...ticketsData?.data?.map((ticket: Ticket) => [
         ticket.user?.name || "N/A",
         ticket.user?.email || "N/A",
         ticket.user?.phone || "N/A",
@@ -173,7 +174,9 @@ export function AttendeeManagementPage({
               <div>
                 <p className="text-sm text-muted-foreground">Checked In</p>
                 <p className="font-semibold">
-                  {ticketsData?.data?.filter((t) => t.scanned).length || 0}
+                  {ticketsData?.data?.filter(
+                    (t: { scanned: boolean }) => t.scanned
+                  ).length || 0}
                 </p>
               </div>
             </div>
@@ -235,7 +238,7 @@ export function AttendeeManagementPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTickets?.map((ticket) => (
+                {filteredTickets?.map((ticket: Ticket) => (
                   <TableRow key={ticket.id}>
                     <TableCell>
                       <div className="flex items-center space-x-3">

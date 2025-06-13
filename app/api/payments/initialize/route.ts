@@ -1,9 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { initializePayment } from "@/lib/paystack";
 import prisma from "@/lib/prisma";
-import { verifyPayment } from "@/lib/paystack";
+import { initializePayment } from "@/lib/paystack";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,12 +13,19 @@ export async function POST(request: NextRequest) {
 
     const { orderId } = await request.json();
 
-    // Get order details
+    if (!orderId) {
+      return NextResponse.json(
+        { error: "Order ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Get the order
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        user: true,
         event: true,
+        user: true,
       },
     });
 
@@ -27,57 +33,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Check if order already has a reference
-    if (order.reference) {
-      // If reference exists, verify if payment was already made
-      try {
-        const paymentStatus = await verifyPayment(order.reference);
-        if (paymentStatus.status === "success") {
-          return NextResponse.json(
-            {
-              error: "Payment already completed",
-              reference: order.reference,
-              authorization_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/verify?reference=${order.reference}`,
-            },
-            { status: 200 }
-          );
-        }
-      } catch (error) {
-        console.log("Error verifying existing payment, creating new one");
-      }
+    // Check if order is already paid
+    if (order.status === "COMPLETED") {
+      return NextResponse.json(
+        { error: "Order is already paid" },
+        { status: 400 }
+      );
     }
 
-    // Generate a unique reference - ensure it's a single string
-    const timestamp = Date.now();
-    const randomId = Math.floor(Math.random() * 1000000);
-    const reference = `qrgate-${timestamp}-${randomId}`;
+    // Generate a unique reference
+    const reference = `qrgate-${Date.now()}-${Math.floor(
+      Math.random() * 1000000
+    )}`;
 
-    // Initialize payment with PayStack
+    // Update order with reference
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { reference },
+    });
+
+    // Initialize payment with Paystack
+    const callbackUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/verify`;
+
     const paymentData = await initializePayment({
       email: order.user.email,
       amount: order.total,
       reference,
-      // Remove reference from callback URL to avoid duplication
-      callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/verify?reference=${reference}`,
+      callbackUrl,
       metadata: {
-        orderId: order.id,
+        orderId,
+        userId: session.user.id,
         eventId: order.eventId,
-        userId: order.userId,
       },
     });
 
-    // Update order with payment reference - use the reference from PayStack response
-    await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        reference: paymentData.reference || reference, // Use PayStack reference if available
-      },
-    });
-
-    return NextResponse.json({
-      ...paymentData,
-      reference: paymentData.reference || reference,
-    });
+    return NextResponse.json({ success: true, data: paymentData });
   } catch (error) {
     console.error("Error initializing payment:", error);
     return NextResponse.json(

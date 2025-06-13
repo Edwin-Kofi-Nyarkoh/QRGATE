@@ -1,90 +1,128 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 export interface CartItem {
   id: string;
-  eventId: string;
-  eventTitle: string;
+  eventId?: string;
+  eventTitle?: string;
   eventImage?: string;
-  eventDate: string;
-  eventLocation: string;
-  getTotalPrice: () => number;
-  ticketType: string;
+  eventDate?: string;
+  eventLocation?: string;
+  ticketType?: string;
   ticketTypeId?: string;
-  price: number;
-  quantity: number;
-  maxQuantity: number;
+  price?: number;
+  quantity?: number;
+  maxQuantity?: number;
+  location?: string;
   title: string;
   image: string;
   startDate: string;
 }
 
-interface CartStore {
+interface CartState {
   items: CartItem[];
+  isOpen: boolean;
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
-  getTotal: () => number;
+  getTotalItems: () => number;
   getTotalPrice: () => number;
-  getCount: () => number;
+  getItemById: (id: string) => CartItem | undefined;
+  setIsOpen: (isOpen: boolean) => void;
 }
 
-export const useCartStore = create<CartStore>()(
+export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      addItem: (item) => {
-        const { items } = get();
-        const existingItem = items.find(
-          (i) =>
-            i.eventId === item.eventId && i.ticketTypeId === item.ticketTypeId
+      isOpen: false,
+
+      addItem: (newItem) => {
+        const items = get().items;
+        const existingItemIndex = items.findIndex(
+          (item) =>
+            item.eventId === newItem.eventId &&
+            item.ticketTypeId === newItem.ticketTypeId
         );
 
-        if (existingItem) {
+        if (existingItemIndex > -1) {
+          // Update existing item quantity
+          const existingItem = items[existingItemIndex];
+          const newQuantity = Math.min(
+            (existingItem?.quantity ?? 0) + (newItem?.quantity ?? 0),
+            existingItem?.maxQuantity ?? 10
+          );
+
           set({
-            items: items.map((i) =>
-              i.eventId === item.eventId && i.ticketTypeId === item.ticketTypeId
-                ? { ...i, quantity: i.quantity + item.quantity }
-                : i
+            items: items.map((item, index) =>
+              index === existingItemIndex
+                ? { ...item, quantity: newQuantity }
+                : item
             ),
           });
         } else {
-          set({ items: [...items, item] });
+          // Add new item
+          set({
+            items: [...items, newItem],
+          });
         }
       },
+
       removeItem: (id) => {
-        const { items } = get();
-        set({ items: items.filter((i) => i.id !== id) });
-      },
-      getTotalPrice: () => {
-        const { items } = get();
-        return items.reduce(
-          (total, item) => total + item.price * item.quantity,
-          0
-        );
-      },
-      updateQuantity: (id, quantity) => {
-        const { items } = get();
         set({
-          items: items.map((i) => (i.id === id ? { ...i, quantity } : i)),
+          items: get().items.filter((item) => item.id !== id),
         });
       },
-      clearCart: () => set({ items: [] }),
-      getTotal: () => {
-        const { items } = get();
-        return items.reduce(
-          (total, item) => total + item.price * item.quantity,
+
+      updateQuantity: (id, quantity) => {
+        if (quantity <= 0) {
+          get().removeItem(id);
+          return;
+        }
+
+        set({
+          items: get().items.map((item) => {
+            if (item.id === id) {
+              return {
+                ...item,
+                quantity: Math.min(quantity, item?.maxQuantity ?? 10),
+              };
+            }
+            return item;
+          }),
+        });
+      },
+
+      clearCart: () => {
+        set({ items: [] });
+      },
+
+      getTotalItems: () => {
+        return get().items.reduce(
+          (total, item) => total + (item?.quantity ?? 0),
           0
         );
       },
-      getCount: () => {
-        const { items } = get();
-        return items.reduce((count, item) => count + item.quantity, 0);
+
+      getTotalPrice: () => {
+        return get().items.reduce(
+          (total, item) => total + (item?.price ?? 0) * (item?.quantity ?? 0),
+          0
+        );
+      },
+
+      getItemById: (id) => {
+        return get().items.find((item) => item.id === id);
+      },
+
+      setIsOpen: (isOpen) => {
+        set({ isOpen });
       },
     }),
     {
       name: "cart-storage",
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

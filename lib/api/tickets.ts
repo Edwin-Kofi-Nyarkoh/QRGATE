@@ -8,7 +8,7 @@ export const useUserTickets = (page = 1, limit = 10) => {
     queryKey: ["tickets", page, limit],
     queryFn: async () => {
       const response = await apiClient.get(
-        `/api/tickets?page=${page}&limit=${limit}`
+        `/tickets?page=${page}&limit=${limit}`
       );
       return response.data;
     },
@@ -21,7 +21,7 @@ export const useEventTickets = (eventId: string, page = 1, limit = 10) => {
     queryKey: ["eventTickets", eventId, page, limit],
     queryFn: async () => {
       const response = await apiClient.get(
-        `/api/tickets?eventId=${eventId}&page=${page}&limit=${limit}`
+        `/tickets?eventId=${eventId}&page=${page}&limit=${limit}`
       );
       return response.data;
     },
@@ -33,7 +33,7 @@ export const useEventTickets = (eventId: string, page = 1, limit = 10) => {
 export const useVerifyTicket = () => {
   return useMutation({
     mutationFn: async (data: { qrCode: string; eventId: string }) => {
-      const response = await apiClient.post("/api/tickets/verify", data);
+      const response = await apiClient.post("/tickets/verify", data);
       return response.data;
     },
   });
@@ -44,7 +44,7 @@ export const useTicket = (id: string) => {
   return useQuery({
     queryKey: ["ticket", id],
     queryFn: async () => {
-      const response = await apiClient.get(`/api/tickets/${id}`);
+      const response = await apiClient.get(`/tickets/${id}`);
       return response.data;
     },
     enabled: !!id,

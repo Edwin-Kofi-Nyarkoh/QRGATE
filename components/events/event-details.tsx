@@ -34,12 +34,13 @@ export function EventDetails({ event }: EventDetailsProps) {
   const [selectedTicketType, setSelectedTicketType] = useState(
     event.ticketTypes && event.ticketTypes.length > 0
       ? event.ticketTypes[0].id
-      : null
+      : "standard"
   );
   const [quantity, setQuantity] = useState(1);
+  const [showQuantity, setShowQuantity] = useState(false);
   const { addItem, items } = useCartStore();
 
-  // Find if this event is already in cart
+  // Find if this event is already in cart with the selected ticket type
   const isInCart = items.some(
     (item) =>
       item.eventId === event.id && item.ticketTypeId === selectedTicketType
@@ -48,12 +49,17 @@ export function EventDetails({ event }: EventDetailsProps) {
   // Get the selected ticket type object
   const ticketType = event.ticketTypes?.find(
     (type: any) => type.id === selectedTicketType
-  );
+  ) || {
+    id: "standard",
+    name: "Standard",
+    price: event.price,
+    quantity: event.totalTickets,
+    soldCount: event.soldTickets,
+    description: "Standard admission ticket",
+  };
 
   // Calculate available tickets for the selected type
-  const availableTickets = ticketType
-    ? ticketType.quantity - ticketType.soldCount
-    : event.totalTickets - event.soldTickets;
+  const availableTickets = ticketType.quantity - ticketType.soldCount;
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -74,34 +80,38 @@ export function EventDetails({ event }: EventDetailsProps) {
   };
 
   const handleAddToCart = () => {
-    if (!ticketType) return;
+    if (showQuantity) {
+      addItem({
+        id: `${event.id}-${ticketType.id}-${Date.now()}`,
+        eventId: event.id,
+        eventTitle: event.title,
+        eventImage: event.mainImage || undefined,
+        eventDate: event.startDate.toString(),
+        eventLocation: event.location,
+        ticketType: ticketType.name,
+        ticketTypeId: ticketType.id,
+        price: ticketType.price,
+        quantity: quantity,
+        maxQuantity: Math.min(10, availableTickets),
+        title: event.title,
+        image: event.mainImage || "",
+        startDate: event.startDate.toString(),
+      });
 
-    addItem({
-      id: `${event.id}-${ticketType.id}-${Date.now()}`,
-      eventId: event.id,
-      eventTitle: event.title,
-      eventImage: event.mainImage,
-      eventDate: event.startDate,
-      eventLocation: event.location,
-      ticketType: ticketType.name,
-      ticketTypeId: ticketType.id,
-      price: ticketType.price,
-      quantity: quantity,
-      maxQuantity: availableTickets,
-      title: event.title,
-      image: event.mainImage || "",
-      startDate: event.startDate.toString(),
-    });
+      toast.success("Added to cart", {
+        description: `${quantity} ${ticketType.name} ticket${
+          quantity > 1 ? "s" : ""
+        } for ${event.title}`,
+      });
 
-    toast.success("Added to cart", {
-      description: `${quantity} ${ticketType.name} ticket${
-        quantity > 1 ? "s" : ""
-      } for ${event.title}`,
-    });
+      setShowQuantity(false);
+    } else {
+      setShowQuantity(true);
+    }
   };
 
   const incrementQuantity = () => {
-    if (quantity < availableTickets) {
+    if (quantity < Math.min(10, availableTickets)) {
       setQuantity(quantity + 1);
     }
   };
@@ -192,12 +202,15 @@ export function EventDetails({ event }: EventDetailsProps) {
               <EventCountdown date={new Date(event.startDate)} />
 
               {/* Ticket Type Selection */}
-              {event.ticketTypes && event.ticketTypes.length > 0 && (
+              {event.ticketTypes && event.ticketTypes.length > 0 ? (
                 <div className="space-y-4">
                   <h3 className="font-medium">Select Ticket Type</h3>
                   <RadioGroup
                     value={selectedTicketType}
-                    onValueChange={setSelectedTicketType}
+                    onValueChange={(value) => {
+                      setSelectedTicketType(value);
+                      setShowQuantity(false);
+                    }}
                     className="space-y-3"
                   >
                     {event.ticketTypes.map((type: any) => {
@@ -234,6 +247,28 @@ export function EventDetails({ event }: EventDetailsProps) {
                       );
                     })}
                   </RadioGroup>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <h3 className="font-medium">Standard Ticket</h3>
+                  <div className="border p-3 rounded-md">
+                    <div className="flex justify-between">
+                      <div>
+                        <div className="font-medium">Standard</div>
+                        <div className="text-sm text-gray-500">
+                          General admission
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-primary">
+                          Ghc{event.price.toFixed(2)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {event.totalTickets - event.soldTickets} available
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -272,16 +307,11 @@ export function EventDetails({ event }: EventDetailsProps) {
               <div className="space-y-1 border-t pt-4">
                 <div className="flex justify-between">
                   <span>Price per ticket:</span>
-                  <span>
-                    Ghc{ticketType?.price.toFixed(2) || event.price.toFixed(2)}
-                  </span>
+                  <span>Ghc{ticketType.price.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total:</span>
-                  <span>
-                    Ghc
-                    {((ticketType?.price || event.price) * quantity).toFixed(2)}
-                  </span>
+                  <span>Ghc{(ticketType.price * quantity).toFixed(2)}</span>
                 </div>
               </div>
 
@@ -289,16 +319,16 @@ export function EventDetails({ event }: EventDetailsProps) {
                 <Button
                   className="w-full"
                   onClick={handleAddToCart}
-                  disabled={!selectedTicketType || availableTickets <= 0}
+                  disabled={availableTickets <= 0 || isInCart}
                 >
-                  Add to Cart
+                  {isInCart ? "Already in Cart" : "Add to Cart"}
                 </Button>
                 <BuyNowButton
                   eventId={event.id}
-                  price={ticketType?.price || event.price}
-                  ticketTypeId={selectedTicketType}
+                  price={ticketType.price}
+                  ticketTypeId={ticketType.id}
                   quantity={quantity}
-                  disabled={!selectedTicketType || availableTickets <= 0}
+                  disabled={availableTickets <= 0}
                 />
                 <Button
                   variant="outline"

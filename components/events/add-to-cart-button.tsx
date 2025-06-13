@@ -28,36 +28,41 @@ export function AddToCartButton({
   );
 
   // Get the selected ticket type object
-  const ticketType =
-    event.ticketTypes?.find((type: TicketType) => type.id === ticketTypeId) ||
-    event.ticketTypes?.[0];
+  const ticketType = event.ticketTypes?.find(
+    (type: TicketType) => type.id === ticketTypeId
+  ) || {
+    id: "standard",
+    name: "Standard",
+    price: event.price,
+    quantity: event.totalTickets,
+    soldCount: event.soldTickets,
+    description: "Standard admission ticket",
+  };
 
   // Calculate available tickets for the selected type
-  const availableTickets = ticketType
-    ? ticketType.quantity - ticketType.soldCount
-    : event.totalTickets - event.soldTickets;
+  const availableTickets = ticketType.quantity - ticketType.soldCount;
 
   const handleAddToCart = () => {
     if (showQuantity) {
       addItem({
-        id: `${event.id}-${ticketType?.id || "standard"}-${Date.now()}`,
+        id: `${event.id}-${ticketType.id}-${Date.now()}`,
         eventId: event.id,
         eventTitle: event.title,
         eventImage: event.mainImage || undefined,
         eventDate: event.startDate.toString(),
         eventLocation: event.location,
-        ticketType: ticketType?.name || "Standard",
-        ticketTypeId: ticketType?.id,
-        price: ticketType?.price || event.price,
+        ticketType: ticketType.name,
+        ticketTypeId: ticketType.id,
+        price: ticketType.price,
         quantity: quantity,
-        maxQuantity: availableTickets,
+        maxQuantity: Math.min(10, availableTickets),
         title: event.title,
         image: event.mainImage || "",
         startDate: event.startDate.toString(),
       });
 
       toast.success("Added to cart", {
-        description: `${quantity} ${ticketType?.name || "Standard"} ticket${
+        description: `${quantity} ${ticketType.name} ticket${
           quantity > 1 ? "s" : ""
         } for ${event.title}`,
       });
@@ -69,7 +74,7 @@ export function AddToCartButton({
   };
 
   const incrementQuantity = () => {
-    if (quantity < availableTickets) {
+    if (quantity < Math.min(10, availableTickets)) {
       setQuantity(quantity + 1);
     }
   };
@@ -100,7 +105,7 @@ export function AddToCartButton({
             variant="ghost"
             size="icon"
             onClick={incrementQuantity}
-            disabled={quantity >= availableTickets}
+            disabled={quantity >= Math.min(10, availableTickets)}
             className="rounded-l-none"
           >
             <Plus className="h-4 w-4" />

@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Ticket, ShoppingBag, TrendingUp, Plus } from "lucide-react";
+import { Calendar, ShoppingBag, TrendingUp, Plus, Ticket } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useUserTickets, useUserOrders } from "@/lib/services";
+import type { Ticket as TicketType } from "@/lib/services";
 
 interface DashboardOverviewProps {
   user: any;
@@ -21,15 +22,17 @@ interface DashboardOverviewProps {
 export function DashboardOverview({ user }: DashboardOverviewProps) {
   const { data: session } = useSession();
   const { data: tickets = [], isLoading: ticketsLoading } = useUserTickets(
-    session?.user?.id || ""
+    session?.user?.id ? Number(session.user.id) : undefined
   );
   const { data: orders = [], isLoading: ordersLoading } = useUserOrders(
     session?.user?.id || ""
   );
-
   const upcomingTickets = tickets.filter(
-    (ticket) => new Date(ticket.event.startDate) > new Date() && !ticket.isUsed
+    (ticket: TicketType) =>
+      new Date(ticket.event.startDate) > new Date() && !ticket.isUsed
   );
+
+  console.log("Upcoming Tickets:", tickets);
 
   const completedOrders = orders.filter(
     (order) => order.status === "COMPLETED"
@@ -66,7 +69,7 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
     },
     {
       title: "Events Attended",
-      value: tickets.filter((t) => t.isUsed).length,
+      value: tickets.filter((t: { isUsed: boolean }) => t.isUsed).length,
       description: "Completed",
       icon: Calendar,
       color: "text-orange-600",
@@ -128,7 +131,7 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
               </div>
             ) : upcomingTickets.length > 0 ? (
               <div className="space-y-4">
-                {upcomingTickets.slice(0, 3).map((ticket) => (
+                {upcomingTickets.slice(0, 3).map((ticket: TicketType) => (
                   <div
                     key={ticket.id}
                     className="flex items-center justify-between"

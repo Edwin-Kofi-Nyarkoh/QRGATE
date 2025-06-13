@@ -1,6 +1,11 @@
 // Common API types
 export interface ApiResponse<T> {
   data: T;
+  orders?: T[];
+  tickets?: T[];
+  events?: T[];
+  users?: T[];
+  securityOfficers?: T[];
   message?: string;
   success: boolean;
 }
@@ -8,6 +13,10 @@ export interface ApiResponse<T> {
 export interface PaginatedResponse<T> {
   data: T[];
   events: T[];
+  orders: T[];
+  tickets: T[];
+  users: T[];
+  securityOfficers: T[];
   totalTickets?: number; // Optional, used in Ticket response
   soldTickets: number;
   pagination: {
