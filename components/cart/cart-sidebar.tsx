@@ -22,12 +22,11 @@ export function CartSidebar() {
     removeItem,
     updateQuantity,
     getTotalPrice,
-    getTotalItems,
+    getCount,
     clearCart,
-    setIsOpen, // <-- ensure setIsOpen is destructured
   } = useCartStore();
 
-  const totalItems = getTotalItems();
+  const totalItems = getCount();
   const totalPrice = getTotalPrice();
 
   if (items.length === 0) {
@@ -163,15 +162,10 @@ export function CartSidebar() {
         <Separator />
 
         <div className="space-y-2">
-          <Button asChild className="w-full" onClick={() => setIsOpen(false)}>
+          <Button asChild className="w-full">
             <Link href="/cart">View Cart</Link>
           </Button>
-          <Button
-            asChild
-            variant="outline"
-            className="w-full"
-            onClick={() => setIsOpen(false)}
-          >
+          <Button asChild variant="outline" className="w-full">
             <Link href="/checkout">Checkout</Link>
           </Button>
         </div>

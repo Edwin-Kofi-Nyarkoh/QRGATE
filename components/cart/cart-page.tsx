@@ -26,13 +26,13 @@ export function CartPage() {
     removeItem,
     updateQuantity,
     getTotalPrice,
-    getTotalItems,
+    getCount, // <-- use getCount instead of getTotalItems
     clearCart,
   } = useCartStore();
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(0);
 
-  const totalItems = getTotalItems();
+  const totalItems = getCount(); // <-- use getCount()
   const subtotal = getTotalPrice();
   const discount = (subtotal * appliedDiscount) / 100;
   const total = subtotal - discount;

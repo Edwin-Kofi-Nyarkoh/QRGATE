@@ -97,16 +97,16 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="fixed inset-0 z-50 w-full max-w-md p-0 bg-white dark:bg-slate-900 transition-transform duration-300 md:relative md:inset-auto md:w-full md:max-w-md md:rounded-none md:shadow-none"
-              style={{
-                top: 0,
-                left: "auto",
-                right: 0,
-                height: "100vh",
-                maxHeight: "100vh",
-                borderRadius: 0,
-                boxShadow: "none",
-              }}
+              // className="fixed inset-0 z-50 w-full max-w-md p-0 bg-white dark:bg-slate-900 transition-transform duration-300 md:relative md:inset-auto md:w-full md:max-w-md md:rounded-none md:shadow-none"
+              // style={{
+              //   top: 0,
+              //   left: "auto",
+              //   right: 0,
+              //   height: "100vh",
+              //   maxHeight: "100vh",
+              //   borderRadius: 0,
+              //   boxShadow: "none",
+              // }}
             >
               <CartSidebar />
             </SheetContent>

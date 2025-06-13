@@ -17,11 +17,12 @@ import { generateQRCode } from "@/lib/qr-code";
 export default async function VerifyPaymentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reference?: string; status?: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { reference } = await searchParams;
-
-  if (!reference || Array.isArray(reference)) {
+  const params = await searchParams;
+  const reference =
+    typeof params.reference === "string" ? params.reference : undefined;
+  if (!reference) {
     redirect("/");
   }
 

@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreateEvent } from "@/lib/api/events";
-import { uploadImage } from "@/lib/cloudinary";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -167,13 +166,30 @@ export function CreateEventForm() {
       // Upload main image if provided
       let mainImageUrl = values.mainImage;
       if (mainImageFile) {
-        mainImageUrl = await uploadImage(mainImageFile);
+        // POST to your API route for upload
+        const formData = new FormData();
+        formData.append("file", mainImageFile);
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        mainImageUrl = data.url;
       }
 
       // Upload gallery images if provided
       let galleryUrls: string[] = values.images || [];
       if (galleryFiles.length > 0) {
-        const uploadPromises = galleryFiles.map((file) => uploadImage(file));
+        const uploadPromises = galleryFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await res.json();
+          return data.url;
+        });
         const uploadedUrls = await Promise.all(uploadPromises);
         galleryUrls = [...galleryUrls, ...uploadedUrls];
       }
