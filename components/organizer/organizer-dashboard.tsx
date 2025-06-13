@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEvents } from "@/lib/api/events";
 import { useOrders } from "@/lib/api/orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, DollarSign, Users, Ticket } from "lucide-react";
+import { Calendar, Users, Ticket, BadgeCent } from "lucide-react";
 
 export function OrganizerDashboard() {
   const { data: session } = useSession();
@@ -22,7 +22,7 @@ export function OrganizerDashboard() {
   });
 
   const events = eventsData?.data || [];
-  const orders = ordersData?.data || [];
+  const orders = ordersData?.orders || [];
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
   const totalTicketsSold = orders.reduce(
@@ -43,8 +43,8 @@ export function OrganizerDashboard() {
     },
     {
       title: "Total Revenue",
-      value: `$${totalRevenue.toFixed(2)}`,
-      icon: DollarSign,
+      value: `Ghc${totalRevenue.toFixed(2)}`,
+      icon: BadgeCent,
       color: "text-primary",
       bgColor: "bg-green-100",
     },
@@ -108,7 +108,7 @@ export function OrganizerDashboard() {
                     <p className="text-sm text-gray-600">{event.location}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium">${event.price}</p>
+                    <p className="font-medium">Ghc{event.price}</p>
                     <p className="text-sm text-gray-600">
                       {event.soldTickets}/{event.totalTickets} sold
                     </p>
@@ -137,7 +137,7 @@ export function OrganizerDashboard() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium">${order.total}</p>
+                    <p className="font-medium">Ghc{order.total}</p>
                     <p
                       className={`text-sm ${
                         order.status === "COMPLETED"
