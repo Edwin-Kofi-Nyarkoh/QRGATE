@@ -11,21 +11,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, ShoppingBag, TrendingUp, Plus, Ticket } from "lucide-react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { useUserTickets, useUserOrders } from "@/lib/services";
+import { useUserTickets, useUserOrders, useCurrentUser } from "@/lib/services";
 import type { Ticket as TicketType } from "@/lib/services";
 
 interface DashboardOverviewProps {
   user: any;
 }
 
-export function DashboardOverview({ user }: DashboardOverviewProps) {
-  const { data: session } = useSession();
+export function DashboardOverview() {
+  const { data: user } = useCurrentUser();
+
   const { data: tickets = [], isLoading: ticketsLoading } = useUserTickets(
-    session?.user?.id ? Number(session.user.id) : undefined
+    user?.id ? user.id : undefined
   );
   const { data: orders = [], isLoading: ordersLoading } = useUserOrders(
-    session?.user?.id || ""
+    user?.id || ""
   );
   const now = new Date();
   const upcomingTickets = tickets?.filter(
@@ -219,7 +219,7 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
       </div>
 
       {/* Organizer Section */}
-      {session?.user?.isOrganizer && (
+      {user?.isOrganizer && (
         <Card>
           <CardHeader>
             <CardTitle>Organizer Tools</CardTitle>
