@@ -113,7 +113,7 @@ model EventImage {
 
 model Ticket {
   id        String   @id @default(cuid())
-  qrCode    String   @unique
+  qrCode    String   @db.Text
   type      String   // Standard, VIP, etc.
   price     Float
   isUsed    Boolean  @default(false)

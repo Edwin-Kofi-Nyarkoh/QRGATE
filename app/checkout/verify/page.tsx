@@ -60,36 +60,8 @@ export default async function VerifyPaymentPage({
         if (existingTickets === 0) {
           // Calculate quantity from order total and event price
           const quantity = Math.round(order.total / order.event.price);
-
-          // Create tickets using API route logic
-          try {
-            const ticketsResponse = await fetch(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/tickets`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  eventId: order.eventId,
-                  userId: order.userId,
-                  orderId: order.id,
-                  type: "Standard",
-                  quantity,
-                }),
-              }
-            );
-
-            if (!ticketsResponse.ok) {
-              console.error("Failed to create tickets via API");
-              // Fallback: create tickets directly (for server-side execution)
-              await createTicketsDirectly(order, quantity);
-            }
-          } catch (apiError) {
-            console.error("API call failed, using direct creation:", apiError);
-            // Fallback: create tickets directly
-            await createTicketsDirectly(order, quantity);
-          }
+          // Directly create tickets server-side
+          await createTicketsDirectly(order, quantity);
         }
 
         paymentStatus = "success";

@@ -15,6 +15,8 @@ import {
   Building,
   ArrowLeft,
   ArrowRight,
+  Ticket,
+  User,
 } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart-store";
 import { useSession } from "next-auth/react";
@@ -131,7 +133,7 @@ export function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header */}
       <div
         className="relative h-56 bg-cover bg-center"
@@ -155,82 +157,89 @@ export function CheckoutPage() {
       </div>
 
       {/* Progress Steps */}
-      <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-4">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
+      <div className="bg-card border-b border-border">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-6">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-8">
+            {steps.map((step, index) => {
+              const completed = currentStep > step.id;
+              const active = currentStep === step.id;
+              const stepIcon = completed ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <span className="font-semibold">{step.id}</span>
+              );
+              return (
                 <div
-                  className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                    currentStep >= step.id
-                      ? "bg-primary border-foreground text-white"
-                      : "border-gray-300 text-gray-400"
-                  }`}
+                  key={step.id}
+                  className="flex flex-col items-center text-center"
                 >
-                  {currentStep > step.id ? (
-                    <CheckCircle className="w-5 h-5" />
-                  ) : (
-                    step.id
-                  )}
-                </div>
-                {index < steps.length - 1 && (
                   <div
-                    className={`w-24 h-0.5 mx-4 ${
-                      currentStep > step.id ? "bg-green-500" : "bg-gray-300"
+                    className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 mb-2 ${
+                      completed
+                        ? "bg-primary border-primary text-white"
+                        : active
+                        ? "bg-primary-light border-primary text-primary"
+                        : "bg-background border-border text-muted-foreground"
                     }`}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-          <Progress value={progress} className="h-2" />
-          <div className="flex justify-between mt-2 text-sm">
-            {steps.map((step) => (
-              <div key={step.id} className="text-center">
-                <p
-                  className={`font-medium ${
-                    currentStep >= step.id ? "text-primary" : "text-gray-400"
-                  }`}
-                >
-                  {step.title}
-                </p>
-                <p className="text-gray-500 text-xs">{step.description}</p>
-              </div>
-            ))}
+                  >
+                    {stepIcon}
+                  </div>
+                  <p
+                    className={`text-sm font-semibold mb-1 ${
+                      active
+                        ? "text-foreground"
+                        : completed
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {step.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {step.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 md:px-8">
         {/* Step 1: Chosen Tickets */}
         {currentStep === 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                01. CHOSEN TICKETS
+          <Card className="bg-card shadow-md rounded-lg">
+            <CardHeader className="border-b border-border pb-4 mb-4">
+              <div className="flex items-center gap-2">
+                <Ticket className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg font-semibold flex-1">
+                  01. CHOSEN TICKETS
+                </CardTitle>
                 <Badge variant="secondary">{items.length} items</Badge>
-              </CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="grid grid-cols-6 gap-4 text-sm font-medium text-gray-600 border-b pb-2">
-                  <div>STT</div>
-                  <div className="col-span-2">TICKETS TYPE</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 sm:gap-4 text-xs sm:text-sm font-medium text-muted-foreground border-b pb-2">
+                  <div>#</div>
+                  <div className="sm:col-span-1 lg:col-span-2">
+                    TICKETS TYPE
+                  </div>
                   <div>PRICE</div>
-                  <div>QUALITY</div>
-                  <div>TOTAL</div>
+                  <div>Qty</div>
+                  <div>Total</div>
                 </div>
 
                 {items.map((item, index) => (
                   <div
                     key={item.id}
-                    className="grid grid-cols-6 gap-4 items-center py-3 border-b"
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 sm:gap-4 items-center py-2 sm:py-3 even:bg-muted rounded-lg"
                   >
                     <div className="text-sm">
                       {String(index + 1).padStart(2, "0")}
                     </div>
-                    <div className="col-span-2">
+                    <div className="sm:col-span-1 lg:col-span-2">
                       <div className="flex items-center gap-3">
                         <div className="relative w-12 h-12 rounded overflow-hidden">
                           <Image
@@ -256,21 +265,23 @@ export function CheckoutPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-sm">Ghc{item.price}</div>
-                    <div className="text-sm">{item.quantity}</div>
-                    <div className="text-sm font-medium">
+                    <div className="text-xs sm:text-sm">Ghc{item.price}</div>
+                    <div className="text-xs sm:text-sm">{item.quantity}</div>
+                    <div className="text-xs sm:text-sm font-medium">
                       Ghc{((item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}
                     </div>
                   </div>
                 ))}
 
-                <div className="flex justify-between items-center pt-4">
-                  <div className="text-sm text-primary">
-                    ✓ SHOPPING CART HAS BEEN UPDATED.
+                <div className="flex flex-col sm:flex-row justify-between items-center pt-4 gap-2">
+                  <div className="text-sm text-primary font-medium">
+                    ✓ Shopping cart updated
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-gray-600">FINAL TOTAL</p>
-                    <p className="text-2xl font-bold text-orange-500">
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      Final Total
+                    </p>
+                    <p className="text-xl sm:text-2xl font-bold text-orange-500">
                       Ghc{totalPrice.toFixed(2)}
                     </p>
                   </div>
@@ -282,12 +293,17 @@ export function CheckoutPage() {
 
         {/* Step 2: User Info */}
         {currentStep === 2 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>02. USER INFORMATION</CardTitle>
+          <Card className="bg-card shadow-md rounded-lg">
+            <CardHeader className="border-b border-border pb-4 mb-4">
+              <div className="flex items-center gap-2">
+                <User className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg font-semibold">
+                  02. USER INFORMATION
+                </CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name *</Label>
                   <Input
@@ -330,9 +346,14 @@ export function CheckoutPage() {
 
         {/* Step 3: Payment Method */}
         {currentStep === 3 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>03. PAYMENT METHOD</CardTitle>
+          <Card className="bg-card shadow-md rounded-lg">
+            <CardHeader className="border-b border-border pb-4 mb-4">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg font-semibold">
+                  03. PAYMENT METHOD
+                </CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
               <RadioGroup
@@ -405,9 +426,14 @@ export function CheckoutPage() {
 
         {/* Step 4: Complete */}
         {currentStep === 4 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>04. ORDER COMPLETE</CardTitle>
+          <Card className="bg-card shadow-md rounded-lg">
+            <CardHeader className="border-b border-border pb-4 mb-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <CardTitle className="text-lg font-semibold">
+                  04. ORDER COMPLETE
+                </CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="text-center py-8">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -429,7 +455,7 @@ export function CheckoutPage() {
         )}
 
         {/* Navigation */}
-        <div className="flex justify-between mt-8">
+        <div className="flex flex-col sm:flex-row justify-between mt-8 gap-4">
           <Button
             variant="outline"
             onClick={handlePrevious}
