@@ -27,12 +27,11 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
   const { data: orders = [], isLoading: ordersLoading } = useUserOrders(
     session?.user?.id || ""
   );
-  const upcomingTickets = tickets.filter(
+  const now = new Date();
+  const upcomingTickets = tickets?.filter(
     (ticket: TicketType) =>
-      new Date(ticket.event.startDate) > new Date() && !ticket.isUsed
+      ticket?.event && new Date(ticket.event.endDate) >= now && !ticket.isUsed
   );
-
-  console.log("Upcoming Tickets:", tickets);
 
   const completedOrders = orders.filter(
     (order) => order.status === "COMPLETED"
