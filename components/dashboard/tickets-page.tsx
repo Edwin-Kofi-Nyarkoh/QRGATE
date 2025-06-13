@@ -20,8 +20,7 @@ import {
   Search,
   Filter,
 } from "lucide-react";
-import { useUserTickets } from "@/lib/services";
-import { useSession } from "next-auth/react";
+import { useCurrentUser, useUserTickets } from "@/lib/services";
 import { useState } from "react";
 import { formatDateTime } from "@/lib/date-utils";
 import Image from "next/image";
@@ -63,12 +62,12 @@ interface Ticket {
 }
 
 export function TicketsPage() {
-  const { data: session } = useSession();
+  const { data: user } = useCurrentUser();
   const params = useSearchParams();
   const orderId = params.get("order");
   const { data: tickets = [], isLoading } = useUserTickets(
-    session?.user?.id ? Number(session.user.id) : undefined,
-    orderId ? Number(orderId) : undefined
+    user?.id ? user.id : undefined,
+    orderId ? orderId : undefined
   );
   const [searchTerm, setSearchTerm] = useState("");
 

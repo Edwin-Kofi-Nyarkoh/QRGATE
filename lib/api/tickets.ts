@@ -3,12 +3,12 @@ import { getClient } from "@/lib/services/api-client";
 const apiClient = getClient();
 
 // Fetch tickets for a user
-export const useUserTickets = (page = 1, limit = 10) => {
+export const useUserTickets = (userId?: string, orderId?: string, page = 1, limit = 10) => {
   return useQuery({
-    queryKey: ["tickets", page, limit],
+    queryKey: ["tickets", userId, orderId, page, limit],
     queryFn: async () => {
       const response = await apiClient.get(
-        `/tickets?page=${page}&limit=${limit}`
+        `/tickets?userId=${userId}&orderId=${orderId}&page=${page}&limit=${limit}`
       );
       return response.data;
     },
