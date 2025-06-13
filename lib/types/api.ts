@@ -59,6 +59,7 @@ export interface Event {
   category: string;
   location: string;
   startDate: Date;
+  eventId: string;
   endDate: Date;
   mainImage: string | null;
   price: number;

@@ -49,9 +49,10 @@ export function AttendeeManagementPage({
     currentPage,
     20
   );
+  console.log("Tickets Data:", ticketsData, "event", event);
 
   const filteredTickets =
-    ticketsData?.data?.filter(
+    ticketsData?.filter(
       (ticket: Ticket) =>
         ticket.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         ticket.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,7 +60,7 @@ export function AttendeeManagementPage({
     ) || [];
 
   const handleExportAttendees = () => {
-    if (!ticketsData?.data) return;
+    if (!ticketsData) return;
 
     const csvContent = [
       [
@@ -112,7 +113,7 @@ export function AttendeeManagementPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-5">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button asChild variant="outline" size="sm">
@@ -240,6 +241,7 @@ export function AttendeeManagementPage({
               <TableBody>
                 {filteredTickets?.map((ticket: Ticket) => (
                   <TableRow key={ticket.id}>
+                    {/* Attendee Info */}
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <Avatar className="w-8 h-8">
@@ -258,6 +260,7 @@ export function AttendeeManagementPage({
                         </div>
                       </div>
                     </TableCell>
+                    {/* Contact */}
                     <TableCell>
                       <div className="space-y-1">
                         <div className="flex items-center text-sm">
@@ -270,10 +273,20 @@ export function AttendeeManagementPage({
                         </div>
                       </div>
                     </TableCell>
+                    {/* Ticket ID and QR Code */}
                     <TableCell>
-                      <code className="text-xs bg-muted px-2 py-1 rounded">
-                        {ticket.qrCode}
-                      </code>
+                      <div className="flex flex-col items-start gap-2">
+                        <code className="text-xs bg-muted px-2 py-1 rounded">
+                          #{ticket.id}
+                        </code>
+                        {ticket.qrCode && (
+                          <img
+                            src={ticket.qrCode}
+                            alt="QR Code"
+                            className="w-24 h-24 object-contain rounded border"
+                          />
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>{formatDate(ticket.createdAt)}</TableCell>
                     <TableCell>
