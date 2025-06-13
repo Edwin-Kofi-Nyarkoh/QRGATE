@@ -1,9 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Ticket, Plus } from "lucide-react";
+import {
+  Calendar,
+  Users,
+  Ticket,
+  Plus,
+  Minus,
+  ShoppingCart,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,8 +21,15 @@ import {
 } from "@/lib/api/events";
 import { formatDate } from "@/lib/date-utils";
 import { useCartStore } from "@/lib/store/cart-store";
-import type { Event } from "@/lib/types/api";
+import type { Event, TicketType } from "@/lib/types/api";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function EventsSection() {
   const { data: upcomingEvents = [], isLoading: upcomingLoading } =
@@ -23,26 +38,40 @@ export function EventsSection() {
     useFeaturedEvents();
   const { data: ongoingEvents = [], isLoading: ongoingLoading } =
     useOngoingEvents();
-  const { addItem } = useCartStore();
+  const { addItem, items } = useCartStore();
 
-  const handleAddToCart = (event: Event) => {
+  const handleAddToCart = (event: Event, ticketTypeId?: string) => {
+    // Find the selected ticket type or use the first one
+    const ticketType = event.ticketTypes?.find((t) => t.id === ticketTypeId) ||
+      event.ticketTypes?.[0] || {
+        id: "",
+        name: "Standard",
+        price: event.price,
+        quantity: event.totalTickets - event.soldTickets,
+        soldCount: 0, // Fix: add soldCount property
+      };
+
+    const availableTickets = ticketType.quantity - (ticketType.soldCount || 0);
+
     addItem({
+      id: `${event.id}-${ticketType.id || "standard"}-${Date.now()}`,
       eventId: event.id,
       eventTitle: event.title,
       eventImage: event.mainImage || undefined,
       eventDate: event.startDate.toString(),
       eventLocation: event.location,
-      ticketType: "Standard",
-      price: event.price,
+      ticketType: ticketType.name,
+      ticketTypeId: ticketType.id,
+      price: ticketType.price,
       quantity: 1,
-      // maxQuantity: Math.min(10, availableTickets),
+      maxQuantity: Math.min(10, availableTickets),
       title: event.title,
       image: event.mainImage || "",
       startDate: event.startDate.toString(),
     });
 
-    toast("Added to cart", {
-      description: `${event.title} has been added to your cart`,
+    toast.success("Added to cart", {
+      description: `${event.title} - ${ticketType.name} ticket has been added to your cart`,
     });
   };
 
@@ -150,12 +179,6 @@ export function EventsSection() {
                 />
               ))}
             </div>
-
-            <div className="text-center mt-8">
-              <Button variant="outline" asChild>
-                <Link href="/events">DISCOVER EVENTS</Link>
-              </Button>
-            </div>
           </div>
         )}
       </div>
@@ -165,84 +188,180 @@ export function EventsSection() {
 
 interface EventCardProps {
   event: Event;
-  onAddToCart: (event: Event) => void;
+  onAddToCart: (event: Event, ticketTypeId?: string) => void;
   featured?: boolean;
   isLive?: boolean;
 }
 
-function EventCard({
-  event,
-  onAddToCart,
-  featured = false,
-  isLive = false,
-}: EventCardProps) {
-  const availableTickets = event.totalTickets - event.soldTickets;
+function EventCard({ event, onAddToCart, featured, isLive }: EventCardProps) {
+  const [selectedTicketType, setSelectedTicketType] = useState<string | null>(
+    event.ticketTypes && event.ticketTypes.length > 0
+      ? event.ticketTypes[0].id
+      : null
+  );
+  const [quantity, setQuantity] = useState(1);
+  const [showQuantity, setShowQuantity] = useState(false);
+  const { items } = useCartStore();
+
+  // Check if this event is in cart
+  const cartItem = items.find(
+    (item) =>
+      item.eventId === event.id && item.ticketTypeId === selectedTicketType
+  );
+
+  // Get the selected ticket type object
+  const ticketType = event.ticketTypes?.find(
+    (type: TicketType) => type.id === selectedTicketType
+  );
+
+  // Calculate available tickets for the selected type
+  const availableTickets = ticketType
+    ? ticketType.quantity - ticketType.soldCount
+    : event.totalTickets - event.soldTickets;
+
+  const handleAddToCart = () => {
+    if (showQuantity) {
+      onAddToCart(event, selectedTicketType || undefined);
+      setShowQuantity(false);
+    } else {
+      setShowQuantity(true);
+    }
+  };
+
+  const incrementQuantity = () => {
+    if (quantity < availableTickets) {
+      setQuantity(quantity + 1);
+    }
+  };
+
+  const decrementQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
 
   return (
-    <Card className="overflow-hidden group hover:shadow-lg transition-shadow">
-      <div className="relative">
-        <Image
-          src={event.mainImage || "/placeholder.svg?height=200&width=400"}
-          alt={event.title}
-          width={featured ? 400 : 300}
-          height={featured ? 200 : 200}
-          className="w-full h-48 object-cover"
-        />
-        <div className="absolute top-4 left-4 bg-black/70 text-white p-2 rounded text-center">
-          <div className="text-xl font-bold">
-            {new Date(event.startDate).getDate()}
+    <Card
+      className={`overflow-hidden transition-all duration-300 hover:shadow-lg ${
+        featured ? "md:flex" : ""
+      }`}
+    >
+      <div
+        className={`relative ${
+          featured ? "md:w-1/2" : "aspect-[16/9]"
+        } overflow-hidden`}
+      >
+        <Link href={`/events/${event.id}`}>
+          <Image
+            src={event.mainImage || "/placeholder.svg?height=300&width=500"}
+            alt={event.title}
+            fill
+            className="object-cover transition-transform duration-300 hover:scale-105"
+          />
+          {isLive && (
+            <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              LIVE NOW
+            </div>
+          )}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+            <Badge
+              variant="secondary"
+              className="mb-2 capitalize bg-white/20 backdrop-blur-sm"
+            >
+              {event.category}
+            </Badge>
           </div>
-          <div className="text-xs">
-            {new Date(event.startDate).toLocaleString("default", {
-              month: "short",
-            })}
-          </div>
-        </div>
-        {isLive && (
-          <div className="absolute top-4 right-4 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-            LIVE
-          </div>
-        )}
-        <div className="absolute bottom-4 left-4 flex gap-2">
-          <Badge className="bg-blue-500">
-            {event._count?.tickets || 0} Attendees
-          </Badge>
-          <Badge className="bg-green-500">{event.location}</Badge>
-        </div>
+        </Link>
       </div>
-      <CardContent className="p-4">
-        <h3 className="font-semibold mb-2 line-clamp-2">{event.title}</h3>
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              {event._count?.tickets || 0}
-            </span>
-            <span className="flex items-center gap-1">
-              <Calendar className="w-4 h-4" />
-              {formatDate(event.startDate)}
-            </span>
+
+      <CardContent
+        className={`p-4 ${featured ? "md:w-1/2 md:p-6" : ""} space-y-4`}
+      >
+        <Link href={`/events/${event.id}`} className="hover:underline">
+          <h3 className="font-bold text-lg line-clamp-2">{event.title}</h3>
+        </Link>
+
+        <div className="flex items-center text-sm text-gray-500 gap-4">
+          <div className="flex items-center gap-1">
+            <Calendar className="w-4 h-4" />
+            {formatDate(event.startDate)}
+          </div>
+          <div className="flex items-center gap-1">
+            <Users className="w-4 h-4" />
+            {event._count?.tickets || 0}
           </div>
         </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-lg font-bold text-orange-500">
-              Ghc{event.price.toFixed(2)}
-            </span>
-            <p className="text-xs text-gray-500">
-              {availableTickets} tickets left
-            </p>
+
+        {featured && (
+          <p className="text-gray-600 line-clamp-3">{event.description}</p>
+        )}
+
+        <div className="pt-2 space-y-3">
+          {/* Ticket Type Selection */}
+          {event.ticketTypes && event.ticketTypes.length > 1 && (
+            <Select
+              value={selectedTicketType || undefined}
+              onValueChange={(value) => setSelectedTicketType(value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select ticket type" />
+              </SelectTrigger>
+              <SelectContent>
+                {event.ticketTypes.map((type: TicketType) => (
+                  <SelectItem key={type.id} value={type.id}>
+                    {type.name} - Ghc{type.price.toFixed(2)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500">From</p>
+              <p className="font-bold text-lg">
+                Ghc{(ticketType?.price || event.price).toFixed(2)}
+              </p>
+            </div>
+
+            {showQuantity ? (
+              <div className="flex items-center border rounded-md">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={decrementQuantity}
+                  disabled={quantity <= 1}
+                  className="rounded-r-none h-9 w-9"
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                <div className="flex-1 text-center py-1 px-2 min-w-[40px]">
+                  {quantity}
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={incrementQuantity}
+                  disabled={quantity >= availableTickets}
+                  className="rounded-l-none h-9 w-9"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                onClick={handleAddToCart}
+                disabled={availableTickets <= 0}
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                {cartItem ? "In Cart" : "Add to Cart"}
+              </Button>
+            )}
           </div>
-          <Button
-            size="sm"
-            onClick={() => onAddToCart(event)}
-            disabled={availableTickets === 0}
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Add to Cart
-          </Button>
         </div>
       </CardContent>
     </Card>

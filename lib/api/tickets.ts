@@ -1,106 +1,52 @@
-"use client";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getClient } from "@/lib/services/api-client";
+const apiClient = getClient();
 
-import {
-  useQuery,
-  useMutation,
-  type UseQueryOptions,
-} from "@tanstack/react-query";
-import { apiGet, apiPost } from "@/lib/services/api-client";
-import type { Ticket, PaginatedResponse } from "@/lib/types/api";
-
-// API functions
-export const ticketsApi = {
-  getTickets: async (params?: {
-    userId?: string;
-    eventId?: string;
-    page?: number;
-    limit?: number;
-  }): Promise<PaginatedResponse<Ticket>> => {
-    const searchParams = new URLSearchParams();
-
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          searchParams.append(key, value.toString());
-        }
-      });
-    }
-
-    return apiGet<PaginatedResponse<Ticket>>(
-      `/tickets?${searchParams.toString()}`
-    );
-  },
-
-  getUserTickets: async (
-    userId: string,
-    orderId: string
-  ): Promise<Ticket[]> => {
-    const response = await apiGet<PaginatedResponse<Ticket>>(
-      `/tickets?userId=${userId}&orderId=${orderId}`
-    );
-    return response.data;
-  },
-
-  verifyTicket: async (
-    qrCode: string
-  ): Promise<{ valid: boolean; ticket?: Ticket; message: string }> => {
-    return apiPost<{ valid: boolean; ticket?: Ticket; message: string }>(
-      "/tickets/verify",
-      { qrCode }
-    );
-  },
-
-  downloadTicket: async (ticketId: string): Promise<Blob> => {
-    return apiGet<Blob>(`/tickets/${ticketId}/download`, {
-      responseType: "blob",
-    });
-  },
-};
-
-// Query keys
-export const ticketKeys = {
-  all: ["tickets"] as const,
-  lists: () => [...ticketKeys.all, "list"] as const,
-  list: (filters: {
-    userId?: string;
-    eventId?: string;
-    page?: number;
-    limit?: number;
-  }) => [...ticketKeys.lists(), filters] as const,
-  userTickets: (userId: string) => [...ticketKeys.all, "user", userId] as const,
-};
-
-// Query hooks
-export const useTickets = (
-  params?: { userId?: string; eventId?: string; page?: number; limit?: number },
-  options?: Omit<
-    UseQueryOptions<PaginatedResponse<Ticket>>,
-    "queryKey" | "queryFn"
-  >
-) => {
+// Fetch tickets for a user
+export const useUserTickets = (page = 1, limit = 10) => {
   return useQuery({
-    queryKey: ticketKeys.list(params || {}),
-    queryFn: () => ticketsApi.getTickets(params),
-    ...options,
+    queryKey: ["tickets", page, limit],
+    queryFn: async () => {
+      const response = await apiClient.get(
+        `/api/tickets?page=${page}&limit=${limit}`
+      );
+      return response.data;
+    },
   });
 };
 
-export const useUserTickets = (
-  userId: string,
-  orderId?: string,
-  options?: Omit<UseQueryOptions<Ticket[]>, "queryKey" | "queryFn">
-) => {
+// Fetch tickets for an event
+export const useEventTickets = (eventId: string, page = 1, limit = 10) => {
   return useQuery({
-    queryKey: ticketKeys.userTickets(userId),
-    queryFn: () => ticketsApi.getUserTickets(userId, orderId || ""),
-    enabled: !!userId,
-    ...options,
+    queryKey: ["eventTickets", eventId, page, limit],
+    queryFn: async () => {
+      const response = await apiClient.get(
+        `/api/tickets?eventId=${eventId}&page=${page}&limit=${limit}`
+      );
+      return response.data;
+    },
+    enabled: !!eventId,
   });
 };
 
-// Mutation hooks
+// Verify a ticket
 export const useVerifyTicket = () => {
   return useMutation({
-    mutationFn: ticketsApi.verifyTicket,
+    mutationFn: async (data: { qrCode: string; eventId: string }) => {
+      const response = await apiClient.post("/api/tickets/verify", data);
+      return response.data;
+    },
+  });
+};
+
+// Get a ticket by ID
+export const useTicket = (id: string) => {
+  return useQuery({
+    queryKey: ["ticket", id],
+    queryFn: async () => {
+      const response = await apiClient.get(`/api/tickets/${id}`);
+      return response.data;
+    },
+    enabled: !!id,
   });
 };

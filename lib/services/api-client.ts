@@ -82,7 +82,7 @@ function createApiClient(config: ApiClientConfig = {}): AxiosInstance {
   return clientInstance;
 }
 
-function getClient(): AxiosInstance {
+export function getClient(): AxiosInstance {
   if (!clientInstance) {
     return createApiClient();
   }

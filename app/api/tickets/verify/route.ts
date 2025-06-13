@@ -1,20 +1,31 @@
-import prisma from "@/lib/prisma";
 import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import prisma from "@/lib/prisma";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    const { qrCode } = await request.json();
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { qrCode, eventId } = body;
 
     if (!qrCode) {
       return NextResponse.json(
-        { valid: false, message: "QR code is required" },
+        { error: "QR code is required" },
         { status: 400 }
       );
     }
 
-    // Find the ticket
-    const ticket = await prisma.ticket.findUnique({
-      where: { qrCode },
+    // Find the ticket by QR code
+    const ticket = await prisma.ticket.findFirst({
+      where: {
+        qrCode,
+        eventId,
+      },
       include: {
         event: true,
         user: {
@@ -22,52 +33,66 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             email: true,
-            phone: true,
-            profileImage: true,
           },
         },
-        order: true,
+        ticketType: true,
       },
     });
 
     if (!ticket) {
-      return NextResponse.json({
-        valid: false,
-        message: "Invalid ticket - not found",
-      });
+      return NextResponse.json(
+        { error: "Invalid ticket", valid: false },
+        { status: 404 }
+      );
     }
 
-    // Check if ticket is already used
+    // Check if the ticket has already been used
     if (ticket.isUsed) {
       return NextResponse.json({
+        error: "Ticket has already been used",
         valid: false,
-        message: `Ticket already used on ${ticket.usedAt?.toLocaleString()}`,
         ticket,
       });
     }
 
-    // Check if event is active (within event date range)
+    // Check if the event is active
     const now = new Date();
-    const eventStart = new Date(ticket.event.startDate);
-    const eventEnd = new Date(ticket.event.endDate);
-
-    if (now < eventStart) {
+    if (now < ticket.event.startDate) {
       return NextResponse.json({
+        error: "Event has not started yet",
         valid: false,
-        message: "Event has not started yet",
         ticket,
       });
     }
 
-    if (now > eventEnd) {
+    if (now > ticket.event.endDate) {
       return NextResponse.json({
+        error: "Event has already ended",
         valid: false,
-        message: "Event has already ended",
         ticket,
       });
     }
 
-    // Mark ticket as used
+    // Check if the security officer is assigned to this event
+    const securityOfficer = await prisma.securityOfficer.findFirst({
+      where: {
+        userId: session.user.id,
+        eventId,
+        active: true,
+      },
+    });
+
+    if (!securityOfficer) {
+      return NextResponse.json(
+        {
+          error: "You are not authorized to verify tickets for this event",
+          valid: false,
+        },
+        { status: 403 }
+      );
+    }
+
+    // Mark the ticket as used
     const updatedTicket = await prisma.ticket.update({
       where: { id: ticket.id },
       data: {
@@ -81,23 +106,20 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             email: true,
-            phone: true,
-            profileImage: true,
           },
         },
-        order: true,
+        ticketType: true,
       },
     });
 
     return NextResponse.json({
       valid: true,
-      message: "Ticket verified successfully - Welcome!",
       ticket: updatedTicket,
     });
   } catch (error) {
-    console.error("Ticket verification error:", error);
+    console.error("Error verifying ticket:", error);
     return NextResponse.json(
-      { valid: false, message: "Verification failed" },
+      { error: "Failed to verify ticket", valid: false },
       { status: 500 }
     );
   }

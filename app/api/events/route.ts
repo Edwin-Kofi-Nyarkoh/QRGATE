@@ -8,10 +8,12 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status") || "UPCOMING";
     const limit = Number.parseInt(searchParams.get("limit") || "10");
     const page = Number.parseInt(searchParams.get("page") || "1");
+    const organizerId = searchParams.get("organizerId");
 
     const where = {
       status: status as any,
       ...(category && { category: category.toLowerCase() }),
+      ...(organizerId && { organizerId }),
     };
 
     const events = await prisma.event.findMany({
@@ -24,6 +26,7 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
+        ticketTypes: true,
         _count: {
           select: {
             tickets: true,
@@ -72,8 +75,10 @@ export async function POST(request: NextRequest) {
       organizerId,
       mainImage,
       images, // array of urls
+      ticketTypes = [], // array of ticket types
     } = body;
 
+    // Create the event
     const event = await prisma.event.create({
       data: {
         title,
@@ -105,7 +110,47 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(event, { status: 201 });
+    // Create ticket types if provided
+    if (ticketTypes && ticketTypes.length > 0) {
+      await prisma.ticketType.createMany({
+        data: ticketTypes.map((type: any) => ({
+          name: type.name,
+          price: Number.parseFloat(type.price),
+          quantity: Number.parseInt(type.quantity),
+          description: type.description,
+          eventId: event.id,
+        })),
+      });
+    } else {
+      // Create default ticket type if none provided
+      await prisma.ticketType.create({
+        data: {
+          name: "Standard",
+          price: Number.parseFloat(price),
+          quantity: Number.parseInt(totalTickets),
+          description: "Standard admission",
+          eventId: event.id,
+        },
+      });
+    }
+
+    // Fetch the event with ticket types
+    const eventWithTicketTypes = await prisma.event.findUnique({
+      where: { id: event.id },
+      include: {
+        organizer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        images: true,
+        ticketTypes: true,
+      },
+    });
+
+    return NextResponse.json(eventWithTicketTypes, { status: 201 });
   } catch (error) {
     console.error("Error creating event:", error);
     return NextResponse.json(

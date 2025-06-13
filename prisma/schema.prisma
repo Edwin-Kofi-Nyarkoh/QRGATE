@@ -29,6 +29,7 @@ model User {
   orders        Order[]
   accounts      Account[]
   sessions      Session[]
+  securityOfficers SecurityOfficer[]
   
   // NextAuth
   emailVerified DateTime?
@@ -97,8 +98,28 @@ model Event {
   tickets       Ticket[]
   orders        Order[]
   images        EventImage[]
+  ticketTypes   TicketType[]
+  securityOfficers SecurityOfficer[]
 
   @@map("events")
+}
+
+model TicketType {
+  id          String   @id @default(cuid())
+  name        String
+  price       Float
+  quantity    Int
+  soldCount   Int      @default(0)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId     String
+  tickets     Ticket[]
+
+  @@map("ticket_types")
 }
 
 model EventImage {
@@ -112,22 +133,24 @@ model EventImage {
 }
 
 model Ticket {
-  id        String   @id @default(cuid())
-  qrCode    String   @db.Text
-  type      String   // Standard, VIP, etc.
-  price     Float
-  isUsed    Boolean  @default(false)
-  usedAt    DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  qrCode        String   @db.Text
+  type          String   // Standard, VIP, etc.
+  price         Float
+  isUsed        Boolean  @default(false)
+  usedAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
-  event     Event    @relation(fields: [eventId], references: [id])
-  eventId   String
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  order     Order    @relation(fields: [orderId], references: [id])
-  orderId   String
+  event         Event    @relation(fields: [eventId], references: [id])
+  eventId       String
+  user          User     @relation(fields: [userId], references: [id])
+  userId        String
+  order         Order    @relation(fields: [orderId], references: [id])
+  orderId       String
+  ticketType    TicketType? @relation(fields: [ticketTypeId], references: [id])
+  ticketTypeId  String?
 
   @@map("tickets")
 }
@@ -152,10 +175,29 @@ model Order {
   @@map("orders")
 }
 
+model SecurityOfficer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [id])
+  eventId   String
+
+  @@map("security_officers")
+}
+
 enum Role {
   USER
   ADMIN
   ORGANIZER
+  SECURITY
 }
 
 enum EventStatus {

@@ -26,11 +26,21 @@ export interface User {
   address: string | null;
   gender: string | null;
   birthday: Date | null;
-  role: "USER" | "ADMIN" | "ORGANIZER";
+  role: "USER" | "ADMIN" | "ORGANIZER" | "SECURITY";
   isOrganizer: boolean;
   profileImage: string | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface TicketType {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  soldCount: number;
+  description?: string;
+  eventId: string;
 }
 
 export interface Event {
@@ -55,6 +65,7 @@ export interface Event {
     phone: string | null;
   };
   images: EventImage[];
+  ticketTypes?: TicketType[];
   _count: {
     tickets: number;
   };
@@ -78,6 +89,8 @@ export interface Ticket {
   updatedAt: Date;
   status: string; // "PENDING" | "USED" | "CANCELLED"
   scanned: boolean;
+  ticketTypeId?: string;
+  ticketType?: TicketType;
   event: {
     id: string;
     title: string;
@@ -121,6 +134,20 @@ export interface Order {
   tickets: Ticket[];
 }
 
+export interface SecurityOfficer {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  active: boolean;
+  userId: string;
+  eventId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: User;
+  event?: Event;
+}
+
 // Request types
 export interface CreateEventRequest {
   title: string;
@@ -134,6 +161,12 @@ export interface CreateEventRequest {
   mainImage?: string;
   organizerId: string;
   images?: string[];
+  ticketTypes?: Array<{
+    name: string;
+    price: number;
+    quantity: number;
+    description?: string;
+  }>;
 }
 
 export interface UpdateEventRequest extends Partial<CreateEventRequest> {}
@@ -142,6 +175,7 @@ export interface CreateOrderRequest {
   eventId: string;
   quantity?: number;
   total?: number;
+  ticketTypeId?: string;
 }
 
 export interface UpdateUserRequest {
@@ -163,4 +197,12 @@ export interface EventFilters {
   minPrice?: number;
   maxPrice?: number;
   organizerId?: string; // Added for filtering by organizer
+}
+
+export interface CreateSecurityOfficerRequest {
+  name: string;
+  email: string;
+  phone?: string;
+  eventId: string;
+  userId?: string;
 }

@@ -1,17 +1,27 @@
 "use client";
 
+import type React from "react";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format, parseISO } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCreateEvent } from "@/lib/api/events";
+import { uploadImage } from "@/lib/cloudinary";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -19,287 +29,534 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ImageUpload } from "@/components/ui/image-upload";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { CalendarIcon, Loader2, Plus, Trash } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ImageGalleryUpload } from "@/components/ui/image-gallery-upload";
-import { useCreateEvent } from "@/lib/api/events";
-import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Save } from "lucide-react";
-import Link from "next/link";
-import type { CreateEventRequest } from "@/lib/types/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 
-const eventSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  date: z.string().min(1, "Date is required"),
-  time: z.string().min(1, "Time is required"),
-  location: z.string().min(1, "Location is required"),
-  category: z.string().min(1, "Category is required"),
-  price: z.number().min(0, "Price must be 0 or greater"),
-  totalTickets: z.number().min(1, "Must have at least 1 ticket"),
-  image: z.string().optional(),
-  gallery: z.array(z.string()).optional(),
+const eventCategories = [
+  "conference",
+  "workshop",
+  "seminar",
+  "networking",
+  "concert",
+  "festival",
+  "exhibition",
+  "sports",
+  "charity",
+  "other",
+];
+
+const formSchema = z.object({
+  title: z.string().min(5, "Title must be at least 5 characters"),
+  description: z.string().min(20, "Description must be at least 20 characters"),
+  category: z.string().min(1, "Please select a category"),
+  location: z.string().min(5, "Location must be at least 5 characters"),
+  startDate: z.date({
+    required_error: "Start date is required",
+  }),
+  endDate: z.date({
+    required_error: "End date is required",
+  }),
+  ticketTypes: z
+    .array(
+      z.object({
+        name: z.string().min(1, "Ticket type name is required"),
+        price: z.number().min(0, "Price must be a positive number"),
+        quantity: z.number().int().min(1, "Quantity must be at least 1"),
+        description: z.string().optional(),
+      })
+    )
+    .min(1, "At least one ticket type is required"),
+  mainImage: z.string().optional(),
+  images: z.array(z.string()).optional(),
 });
-
-type EventFormData = z.infer<typeof eventSchema>;
 
 export function CreateEventForm() {
   const router = useRouter();
   const { data: session } = useSession();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mainImageFile, setMainImageFile] = useState<File | null>(null);
+  const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+
   const createEventMutation = useCreateEvent();
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<EventFormData>({
-    resolver: zodResolver(eventSchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      price: 0,
+      title: "",
+      description: "",
+      category: "",
+      location: "",
+      ticketTypes: [
+        {
+          name: "Standard",
+          price: 0,
+          quantity: 100,
+          description: "Regular admission",
+        },
+        {
+          name: "VIP",
+          price: 0,
+          quantity: 50,
+          description: "Premium experience with special perks",
+        },
+        {
+          name: "Double",
+          price: 0,
+          quantity: 25,
+          description: "Admission for two people",
+        },
+      ],
+      images: [],
     },
   });
 
-  const watchedImage = watch("image");
-  const watchedGallery = watch("gallery");
+  const addTicketType = () => {
+    const currentTicketTypes = form.getValues("ticketTypes") || [];
+    form.setValue("ticketTypes", [
+      ...currentTicketTypes,
+      { name: "", price: 0, quantity: 0, description: "" },
+    ]);
+  };
 
-  const onSubmit = async (data: EventFormData) => {
+  const removeTicketType = (index: number) => {
+    const currentTicketTypes = form.getValues("ticketTypes") || [];
+    if (currentTicketTypes.length <= 1) {
+      toast.error("You must have at least one ticket type");
+      return;
+    }
+    form.setValue(
+      "ticketTypes",
+      currentTicketTypes.filter((_, i) => i !== index)
+    );
+  };
+
+  const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setMainImageFile(file);
+      setMainImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleGalleryImagesChange = (urls: string[]) => {
+    form.setValue("images", urls);
+    setGalleryPreviews(urls);
+  };
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!session?.user?.id) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to create an event.",
-        variant: "destructive",
-      });
+      toast.error("You must be logged in to create an event");
       return;
     }
 
-    setIsSubmitting(true);
+    setIsUploading(true);
+
     try {
-      // Use date-fns to combine date and time, and set startDate and endDate
-      const startDate = parseISO(`${data.date}T${data.time}`);
-      // For endDate, you might want to add a default duration (e.g., 2 hours)
-      const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+      // Upload main image if provided
+      let mainImageUrl = values.mainImage;
+      if (mainImageFile) {
+        mainImageUrl = await uploadImage(mainImageFile);
+      }
 
-      const eventData: CreateEventRequest = {
-        title: data.title,
-        description: data.description,
-        category: data.category,
-        location: data.location,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        price: data.price,
-        totalTickets: data.totalTickets,
-        mainImage: data.image,
-        images: data.gallery,
-        organizerId: session.user.id, // Use the logged-in user's ID
-      };
+      // Upload gallery images if provided
+      let galleryUrls: string[] = values.images || [];
+      if (galleryFiles.length > 0) {
+        const uploadPromises = galleryFiles.map((file) => uploadImage(file));
+        const uploadedUrls = await Promise.all(uploadPromises);
+        galleryUrls = [...galleryUrls, ...uploadedUrls];
+      }
 
-      await createEventMutation.mutateAsync(eventData);
+      // Calculate total tickets from all ticket types
+      const totalTickets = values.ticketTypes.reduce(
+        (sum, type) => sum + type.quantity,
+        0
+      );
 
-      toast({
-        title: "Event created",
-        description: "Your event has been successfully created.",
+      // Create event with the first ticket type as the default price
+      const defaultTicketType = values.ticketTypes[0];
+
+      await createEventMutation.mutateAsync({
+        title: values.title,
+        description: values.description,
+        category: values.category,
+        location: values.location,
+        startDate: values.startDate.toISOString(),
+        endDate: values.endDate.toISOString(),
+        price: defaultTicketType.price,
+        totalTickets,
+        mainImage: mainImageUrl,
+        organizerId: session.user.id,
+        images: galleryUrls,
+        ticketTypes: values.ticketTypes,
       });
 
-      router.push("/organizer");
+      toast.success("Event created successfully");
+      router.push("/organizer/events");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create event. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error creating event:", error);
+      toast.error("Failed to create event");
     } finally {
-      setIsSubmitting(false);
+      setIsUploading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Button asChild variant="outline" size="sm">
-          <Link href="/organizer">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Link>
-        </Button>
-      </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Left Column - Basic Info */}
+          <div className="space-y-6">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Event Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter event title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Form */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="title">Event Title</Label>
-                <Input
-                  id="title"
-                  {...register("title")}
-                  placeholder="Enter event title"
-                />
-                {errors.title && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {errors.title.message}
-                  </p>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe your event"
+                      className="min-h-32"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {eventCategories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category.charAt(0).toUpperCase() +
+                              category.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
+              />
 
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  {...register("description")}
-                  placeholder="Describe your event"
-                  rows={4}
-                />
-                {errors.description && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {errors.description.message}
-                  </p>
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Event location" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
+              />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="date">Date</Label>
-                  <Input id="date" type="date" {...register("date")} />
-                  {errors.date && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {errors.date.message}
-                    </p>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="startDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Start Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>End Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Right Column - Images */}
+          <div className="space-y-6">
+            <FormItem>
+              <FormLabel>Main Event Image</FormLabel>
+              <FormControl>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                  {mainImagePreview ? (
+                    <div className="relative aspect-video">
+                      <img
+                        src={mainImagePreview || "/placeholder.svg"}
+                        alt="Event preview"
+                        className="w-full h-full object-cover rounded-md"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={() => {
+                          setMainImageFile(null);
+                          setMainImagePreview(null);
+                        }}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-gray-500 mb-2">
+                        Upload your main event image
+                      </p>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleMainImageChange}
+                      />
+                    </div>
                   )}
                 </div>
+              </FormControl>
+              <FormDescription>
+                This will be the main image displayed for your event.
+              </FormDescription>
+            </FormItem>
 
-                <div>
-                  <Label htmlFor="time">Time</Label>
-                  <Input id="time" type="time" {...register("time")} />
-                  {errors.time && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {errors.time.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  {...register("location")}
-                  placeholder="Event location"
-                />
-                {errors.location && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {errors.location.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select onValueChange={(value) => setValue("category", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="music">Music</SelectItem>
-                    <SelectItem value="sports">Sports</SelectItem>
-                    <SelectItem value="technology">Technology</SelectItem>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="arts">Arts & Culture</SelectItem>
-                    <SelectItem value="food">Food & Drink</SelectItem>
-                    <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.category && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {errors.category.message}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Pricing & Tickets</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="price">Ticket Price (Ghc)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    {...register("price", { valueAsNumber: true })}
-                    placeholder="0.00"
-                  />
-                  {errors.price && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {errors.price.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="totalTickets">Total Tickets</Label>
-                  <Input
-                    id="totalTickets"
-                    type="number"
-                    {...register("totalTickets", { valueAsNumber: true })}
-                    placeholder="100"
-                  />
-                  {errors.totalTickets && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {errors.totalTickets.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <FormItem>
+              <FormLabel>Gallery Images</FormLabel>
+              <FormControl>
+                <ImageGalleryUpload onUpload={handleGalleryImagesChange} />
+              </FormControl>
+              <FormDescription>
+                Upload up to 5 additional images for your event gallery.
+              </FormDescription>
+            </FormItem>
+          </div>
         </div>
 
-        {/* Media Upload */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Event Image</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ImageUpload
-                onUpload={(url: string) => setValue("image", url)}
-                defaultImage={watchedImage}
-              />
-            </CardContent>
-          </Card>
+        {/* Ticket Types Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex justify-between items-center">
+              <span>Ticket Types</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addTicketType}
+              >
+                <Plus className="h-4 w-4 mr-1" /> Add Ticket Type
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {form.watch("ticketTypes")?.map((_, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-md relative"
+                >
+                  {index > 0 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 h-6 w-6"
+                      onClick={() => removeTicketType(index)}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Image Gallery</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ImageGalleryUpload
-                onUpload={(urls: string[]) => setValue("gallery", urls)}
-                defaultImages={watchedGallery || []}
-              />
-            </CardContent>
-          </Card>
+                  <FormField
+                    control={form.control}
+                    name={`ticketTypes.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ticket Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. Standard" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`ticketTypes.${index}.price`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Price</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number.parseFloat(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`ticketTypes.${index}.quantity`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Quantity</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="1"
+                            placeholder="100"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number.parseInt(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`ticketTypes.${index}.description`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ticket description" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            disabled={isUploading || createEventMutation.isPending}
+          >
+            {(isUploading || createEventMutation.isPending) && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            Create Event
+          </Button>
         </div>
-      </div>
-
-      {/* Submit Button */}
-      <div className="flex justify-end">
-        <Button type="submit" disabled={isSubmitting} size="lg">
-          <Save className="w-4 h-4 mr-2" />
-          {isSubmitting ? "Creating Event..." : "Create Event"}
-        </Button>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }

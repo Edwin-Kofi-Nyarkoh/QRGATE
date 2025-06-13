@@ -19,6 +19,7 @@ export async function GET(
           },
         },
         images: true,
+        ticketTypes: true,
         tickets: {
           include: {
             user: {
@@ -27,6 +28,7 @@ export async function GET(
                 name: true,
               },
             },
+            ticketType: true,
           },
         },
         _count: {
@@ -62,10 +64,66 @@ export async function PUT(
     // Fetch current images for the event
     const existingEvent = await prisma.event.findUnique({
       where: { id },
-      include: { images: true },
+      include: {
+        images: true,
+        ticketTypes: true,
+      },
     });
     if (!existingEvent) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+
+    // Handle ticket types update
+    const { ticketTypes, ...eventData } = body;
+
+    if (ticketTypes && Array.isArray(ticketTypes)) {
+      // Process each ticket type
+      for (const ticketType of ticketTypes) {
+        if (ticketType.id) {
+          // Update existing ticket type
+          await prisma.ticketType.update({
+            where: { id: ticketType.id },
+            data: {
+              name: ticketType.name,
+              price: Number(ticketType.price),
+              quantity: Number(ticketType.quantity),
+              description: ticketType.description,
+            },
+          });
+        } else {
+          // Create new ticket type
+          await prisma.ticketType.create({
+            data: {
+              name: ticketType.name,
+              price: Number(ticketType.price),
+              quantity: Number(ticketType.quantity),
+              description: ticketType.description,
+              eventId: id,
+            },
+          });
+        }
+      }
+
+      // Remove ticket types that are not in the update
+      const updatedTypeIds = ticketTypes
+        .filter((t: any) => t.id)
+        .map((t: any) => t.id);
+
+      const existingTypeIds = existingEvent.ticketTypes.map((t) => t.id);
+
+      const typeIdsToDelete = existingTypeIds.filter(
+        (typeId) => !updatedTypeIds.includes(typeId)
+      );
+
+      if (typeIdsToDelete.length > 0) {
+        await prisma.ticketType.deleteMany({
+          where: {
+            id: { in: typeIdsToDelete },
+            // Only delete if no tickets have been sold
+            soldCount: 0,
+          },
+        });
+      }
     }
 
     // Incoming images from frontend: array of { url } or just url strings
@@ -100,13 +158,13 @@ export async function PUT(
         : undefined,
     };
 
-    // Remove images from body to avoid direct update
-    const { images, ...eventData } = body;
+    // Remove images and ticketTypes from body to avoid direct update
+    const { images, ...restEventData } = eventData;
 
     const event = await prisma.event.update({
       where: { id },
       data: {
-        ...eventData,
+        ...restEventData,
         images: imagesUpdate,
       },
       include: {
@@ -118,6 +176,7 @@ export async function PUT(
           },
         },
         images: true,
+        ticketTypes: true,
       },
     });
 

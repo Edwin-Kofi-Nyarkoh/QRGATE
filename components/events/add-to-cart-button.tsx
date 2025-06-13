@@ -2,71 +2,125 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { ShoppingCart, Plus, Minus } from "lucide-react";
 import { useCartStore } from "@/lib/store/cart-store";
-import type { Event } from "@/lib/types/api";
 import { toast } from "sonner";
+import type { Event, TicketType } from "@/lib/types/api";
 
 interface AddToCartButtonProps {
   event: Event;
-  ticketType?: string;
-  quantity?: number;
+  ticketTypeId?: string;
+  className?: string;
 }
 
 export function AddToCartButton({
   event,
-  ticketType = "Standard",
-  quantity = 1,
+  ticketTypeId,
+  className,
 }: AddToCartButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [showQuantity, setShowQuantity] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const { addItem, items } = useCartStore();
 
-  const { addItem } = useCartStore();
+  // Find if this event is already in cart
+  const isInCart = items.some(
+    (item) => item.eventId === event.id && item.ticketTypeId === ticketTypeId
+  );
 
-  const availableTickets = event?.totalTickets - event?.soldTickets;
+  // Get the selected ticket type object
+  const ticketType =
+    event.ticketTypes?.find((type: TicketType) => type.id === ticketTypeId) ||
+    event.ticketTypes?.[0];
 
-  const handleAddToCart = async () => {
-    setIsLoading(true);
+  // Calculate available tickets for the selected type
+  const availableTickets = ticketType
+    ? ticketType.quantity - ticketType.soldCount
+    : event.totalTickets - event.soldTickets;
 
-    try {
+  const handleAddToCart = () => {
+    if (showQuantity) {
       addItem({
+        id: `${event.id}-${ticketType?.id || "standard"}-${Date.now()}`,
         eventId: event.id,
         eventTitle: event.title,
         eventImage: event.mainImage || undefined,
         eventDate: event.startDate.toString(),
         eventLocation: event.location,
-        ticketType,
-        price: event.price,
-        quantity,
-        maxQuantity: Math.min(10, availableTickets),
-        // Required fields for CartItem
+        ticketType: ticketType?.name || "Standard",
+        ticketTypeId: ticketType?.id,
+        price: ticketType?.price || event.price,
+        quantity: quantity,
+        maxQuantity: availableTickets,
         title: event.title,
         image: event.mainImage || "",
         startDate: event.startDate.toString(),
       });
 
-      toast("Added to cart", {
-        description: `${event.title} has been added to your cart`,
+      toast.success("Added to cart", {
+        description: `${quantity} ${ticketType?.name || "Standard"} ticket${
+          quantity > 1 ? "s" : ""
+        } for ${event.title}`,
       });
-    } catch (error) {
-      toast("Failed to add to cart", {
-        description:
-          "There was an error adding the item to your cart. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
+
+      setShowQuantity(false);
+    } else {
+      setShowQuantity(true);
     }
   };
 
+  const incrementQuantity = () => {
+    if (quantity < availableTickets) {
+      setQuantity(quantity + 1);
+    }
+  };
+
+  const decrementQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
+
+  if (showQuantity) {
+    return (
+      <div className="flex items-center space-x-2">
+        <div className="flex items-center border rounded-md">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={decrementQuantity}
+            disabled={quantity <= 1}
+            className="rounded-r-none"
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
+          <div className="flex-1 text-center py-2 px-3">{quantity}</div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={incrementQuantity}
+            disabled={quantity >= availableTickets}
+            className="rounded-l-none"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+        <Button onClick={handleAddToCart} className={className}>
+          Add
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <Button
-      variant="outline"
-      className="w-full"
       onClick={handleAddToCart}
-      disabled={isLoading || availableTickets === 0}
+      className={className}
+      disabled={availableTickets <= 0 || isInCart}
     >
       <ShoppingCart className="w-4 h-4 mr-2" />
-      {availableTickets === 0 ? "Sold Out" : "Add to Cart"}
+      {isInCart ? "In Cart" : "Add to Cart"}
     </Button>
   );
 }

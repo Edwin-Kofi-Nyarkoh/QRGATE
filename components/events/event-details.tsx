@@ -6,12 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Share2, User, Users } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Share2,
+  User,
+  Users,
+  Plus,
+  Minus,
+} from "lucide-react";
 import { EventCountdown } from "@/components/events/event-countdown";
 import { formatDate, formatTime } from "@/lib/date-utils";
 import { ImageGallery } from "@/components/events/image-gallery";
-import { AddToCartButton } from "@/components/events/add-to-cart-button";
 import { BuyNowButton } from "@/components/events/buy-now-button";
+import { useCartStore } from "@/lib/store/cart-store";
+import { toast } from "sonner";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface EventDetailsProps {
   event: any; // Using any for simplicity, but should be properly typed
@@ -19,7 +31,29 @@ interface EventDetailsProps {
 
 export function EventDetails({ event }: EventDetailsProps) {
   const [selectedTab, setSelectedTab] = useState("details");
-  console.log(event);
+  const [selectedTicketType, setSelectedTicketType] = useState(
+    event.ticketTypes && event.ticketTypes.length > 0
+      ? event.ticketTypes[0].id
+      : null
+  );
+  const [quantity, setQuantity] = useState(1);
+  const { addItem, items } = useCartStore();
+
+  // Find if this event is already in cart
+  const isInCart = items.some(
+    (item) =>
+      item.eventId === event.id && item.ticketTypeId === selectedTicketType
+  );
+
+  // Get the selected ticket type object
+  const ticketType = event.ticketTypes?.find(
+    (type: any) => type.id === selectedTicketType
+  );
+
+  // Calculate available tickets for the selected type
+  const availableTickets = ticketType
+    ? ticketType.quantity - ticketType.soldCount
+    : event.totalTickets - event.soldTickets;
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -36,6 +70,45 @@ export function EventDetails({ event }: EventDetailsProps) {
       // Fallback for browsers that don't support the Web Share API
       navigator.clipboard.writeText(window.location.href);
       alert("Link copied to clipboard!");
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (!ticketType) return;
+
+    addItem({
+      id: `${event.id}-${ticketType.id}-${Date.now()}`,
+      eventId: event.id,
+      eventTitle: event.title,
+      eventImage: event.mainImage,
+      eventDate: event.startDate,
+      eventLocation: event.location,
+      ticketType: ticketType.name,
+      ticketTypeId: ticketType.id,
+      price: ticketType.price,
+      quantity: quantity,
+      maxQuantity: availableTickets,
+      title: event.title,
+      image: event.mainImage || "",
+      startDate: event.startDate.toString(),
+    });
+
+    toast.success("Added to cart", {
+      description: `${quantity} ${ticketType.name} ticket${
+        quantity > 1 ? "s" : ""
+      } for ${event.title}`,
+    });
+  };
+
+  const incrementQuantity = () => {
+    if (quantity < availableTickets) {
+      setQuantity(quantity + 1);
+    }
+  };
+
+  const decrementQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
     }
   };
 
@@ -118,18 +191,115 @@ export function EventDetails({ event }: EventDetailsProps) {
             <CardContent className="p-6 space-y-6">
               <EventCountdown date={new Date(event.startDate)} />
 
+              {/* Ticket Type Selection */}
+              {event.ticketTypes && event.ticketTypes.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-medium">Select Ticket Type</h3>
+                  <RadioGroup
+                    value={selectedTicketType}
+                    onValueChange={setSelectedTicketType}
+                    className="space-y-3"
+                  >
+                    {event.ticketTypes.map((type: any) => {
+                      const available = type.quantity - type.soldCount;
+                      return (
+                        <div
+                          key={type.id}
+                          className="flex items-center space-x-2 border p-3 rounded-md"
+                        >
+                          <RadioGroupItem
+                            value={type.id}
+                            id={type.id}
+                            disabled={available <= 0}
+                          />
+                          <Label htmlFor={type.id} className="flex-1">
+                            <div className="flex justify-between">
+                              <div>
+                                <div className="font-medium">{type.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {type.description}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-bold text-primary">
+                                  Ghc{type.price.toFixed(2)}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {available} available
+                                </div>
+                              </div>
+                            </div>
+                          </Label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </div>
+              )}
+
+              {/* Quantity Selector */}
               <div className="space-y-2">
-                <p className="text-2xl font-bold text-primary">
-                  Ghc{event.price.toFixed(2)}
-                </p>
+                <h3 className="font-medium">Quantity</h3>
+                <div className="flex items-center border rounded-md">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={decrementQuantity}
+                    disabled={quantity <= 1}
+                    className="rounded-r-none"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <div className="flex-1 text-center py-2">{quantity}</div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={incrementQuantity}
+                    disabled={quantity >= availableTickets}
+                    className="rounded-l-none"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
                 <p className="text-sm text-gray-500">
-                  {event.totalTickets - event.soldTickets} tickets remaining
+                  {availableTickets} tickets remaining
                 </p>
               </div>
 
+              {/* Price Summary */}
+              <div className="space-y-1 border-t pt-4">
+                <div className="flex justify-between">
+                  <span>Price per ticket:</span>
+                  <span>
+                    Ghc{ticketType?.price.toFixed(2) || event.price.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between font-bold text-lg">
+                  <span>Total:</span>
+                  <span>
+                    Ghc
+                    {((ticketType?.price || event.price) * quantity).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
               <div className="space-y-3">
-                <BuyNowButton eventId={event.id} price={event.price} />
-                <AddToCartButton event={event} />
+                <Button
+                  className="w-full"
+                  onClick={handleAddToCart}
+                  disabled={!selectedTicketType || availableTickets <= 0}
+                >
+                  Add to Cart
+                </Button>
+                <BuyNowButton
+                  eventId={event.id}
+                  price={ticketType?.price || event.price}
+                  ticketTypeId={selectedTicketType}
+                  quantity={quantity}
+                  disabled={!selectedTicketType || availableTickets <= 0}
+                />
                 <Button
                   variant="outline"
                   className="w-full"

@@ -1,320 +1,212 @@
 "use client";
 
-import { useState } from "react";
-import { useEvent } from "@/lib/api/events";
-import { useVerifyTicket } from "@/lib/api/tickets";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Scan,
-  Search,
-  CheckCircle,
-  XCircle,
-  User,
-  Mail,
-  Phone,
-} from "lucide-react";
-import { QrReader } from "react-qr-reader";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { useEventTickets } from "@/lib/api/tickets";
+import { Loader2, CheckCircle } from "lucide-react";
+import { formatDate, formatTime } from "@/lib/date-utils";
 
 interface SecurityOfficerPageProps {
   eventId: string;
 }
 
 export function SecurityOfficerPage({ eventId }: SecurityOfficerPageProps) {
-  const [qrCode, setQrCode] = useState("");
-  const [showScanner, setShowScanner] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<any>(null);
-  const [isScanning, setIsScanning] = useState(false);
+  const [stats, setStats] = useState({
+    totalTickets: 0,
+    scannedTickets: 0,
+    validTickets: 0,
+    invalidTickets: 0,
+  });
 
-  const { data: event } = useEvent(eventId);
-  const verifyTicketMutation = useVerifyTicket();
+  const { data: ticketsData, isLoading } = useEventTickets(eventId);
 
-  const handleScan = async (qrCodeValue: string) => {
-    if (!qrCodeValue) return;
+  useEffect(() => {
+    if (ticketsData?.tickets) {
+      const tickets = ticketsData.tickets;
+      const scanned = tickets.filter((ticket: any) => ticket.isUsed);
 
-    setIsScanning(true);
-    try {
-      const result = await verifyTicketMutation.mutateAsync(qrCodeValue);
-      setVerificationResult(result);
-      setQrCode(qrCodeValue);
-    } catch (error) {
-      setVerificationResult({
-        valid: false,
-        message: "Failed to verify ticket",
+      setStats({
+        totalTickets: tickets.length,
+        scannedTickets: scanned.length,
+        validTickets: scanned.filter((ticket: any) => !ticket.isUsed).length,
+        invalidTickets: scanned.filter((ticket: any) => ticket.isUsed).length,
       });
-    } finally {
-      setIsScanning(false);
-      setShowScanner(false);
     }
-  };
+  }, [ticketsData]);
 
-  const handleManualVerify = async () => {
-    if (!qrCode.trim()) return;
-    await handleScan(qrCode.trim());
-  };
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-10">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-  const handleQrScan = (result: any) => {
-    if (result) {
-      handleScan(result.text);
-    }
-  };
-
-  const handleQrError = (error: any) => {
-    console.error("QR Scanner Error:", error);
-  };
+  const tickets = ticketsData?.tickets || [];
+  const scannedPercentage =
+    stats.totalTickets > 0
+      ? Math.round((stats.scannedTickets / stats.totalTickets) * 100)
+      : 0;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Security Officer Portal
-        </h1>
-        {event && (
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <h2 className="text-xl font-semibold mb-2">{event.title}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-              <div>
-                <strong>Date:</strong>{" "}
-                {new Date(event.startDate).toLocaleDateString()}
-              </div>
-              <div>
-                <strong>Time:</strong>{" "}
-                {new Date(event.startDate).toLocaleTimeString()}
-              </div>
-              <div>
-                <strong>Location:</strong> {event.location}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Scanner Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Scan className="w-5 h-5" />
-              Ticket Scanner
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Manual Input */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Manual QR Code Entry
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Enter QR code or ticket ID"
-                  value={qrCode}
-                  onChange={(e) => setQrCode(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleManualVerify()}
-                />
-                <Button
-                  onClick={handleManualVerify}
-                  disabled={!qrCode.trim() || isScanning}
-                >
-                  <Search className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* QR Scanner Toggle */}
-            <div className="space-y-2">
-              <Button
-                onClick={() => setShowScanner(!showScanner)}
-                variant="outline"
-                className="w-full"
-              >
-                {showScanner ? "Hide Scanner" : "Open QR Scanner"}
-              </Button>
-
-              {showScanner && (
-                <div className="border rounded-lg overflow-hidden">
-                  <QrReader
-                    onResult={(result, error) => {
-                      if (result) handleQrScan(result);
-                      if (error) handleQrError(error);
-                    }}
-                    constraints={{ facingMode: "environment" }}
-                    className="w-full"
-                  />
-                </div>
-              )}
-            </div>
-
-            {isScanning && (
-              <Alert>
-                <AlertDescription>
-                  Verifying ticket... Please wait.
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Verification Result */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {verificationResult?.valid ? (
-                <CheckCircle className="w-5 h-5 text-primary" />
-              ) : verificationResult && !verificationResult.valid ? (
-                <XCircle className="w-5 h-5 text-red-600" />
-              ) : (
-                <User className="w-5 h-5 text-gray-400" />
-              )}
-              Verification Result
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Total Tickets
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {!verificationResult ? (
-              <div className="text-center py-8 text-gray-500">
-                <Scan className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>Scan or enter a QR code to verify ticket</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Status */}
-                <Alert
-                  className={
-                    verificationResult.valid
-                      ? "border-green-200 bg-green-50"
-                      : "border-red-200 bg-red-50"
-                  }
-                >
-                  <AlertDescription
-                    className={
-                      verificationResult.valid
-                        ? "text-green-800"
-                        : "text-red-800"
-                    }
-                  >
-                    {verificationResult.message}
-                  </AlertDescription>
-                </Alert>
+            <div className="text-2xl font-bold">{stats.totalTickets}</div>
+          </CardContent>
+        </Card>
 
-                {/* Ticket Holder Information */}
-                {verificationResult.valid && verificationResult.ticket && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                      <Avatar className="w-16 h-16">
-                        <AvatarImage
-                          src={
-                            verificationResult.ticket.user.profileImage ||
-                            "/placeholder.svg"
-                          }
-                        />
-                        <AvatarFallback className="text-lg">
-                          {verificationResult.ticket.user.name?.charAt(0) ||
-                            "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">
-                          {verificationResult.ticket.user.name ||
-                            "Unknown User"}
-                        </h3>
-                        <div className="space-y-1 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Mail className="w-4 h-4" />
-                            {verificationResult.ticket.user.email}
-                          </div>
-                          {verificationResult.ticket.user.phone && (
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4" />
-                              {verificationResult.ticket.user.phone}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Scanned Tickets
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.scannedTickets}</div>
+            <Progress value={scannedPercentage} className="h-2 mt-2" />
+            <p className="text-xs text-gray-500 mt-1">
+              {scannedPercentage}% of total
+            </p>
+          </CardContent>
+        </Card>
 
-                    {/* Ticket Details */}
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <strong>Ticket Type:</strong>
-                        <p>{verificationResult.ticket.type}</p>
-                      </div>
-                      <div>
-                        <strong>Price:</strong>
-                        <p>${verificationResult.ticket.price}</p>
-                      </div>
-                      <div>
-                        <strong>Purchase Date:</strong>
-                        <p>
-                          {new Date(
-                            verificationResult.ticket.createdAt
-                          ).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div>
-                        <strong>Status:</strong>
-                        <Badge
-                          className={
-                            verificationResult.ticket.isUsed
-                              ? "bg-red-100 text-red-800"
-                              : "bg-green-100 text-green-800"
-                          }
-                        >
-                          {verificationResult.ticket.isUsed ? "Used" : "Valid"}
-                        </Badge>
-                      </div>
-                    </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Valid Entries
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.validTickets}
+            </div>
+          </CardContent>
+        </Card>
 
-                    {verificationResult.ticket.isUsed &&
-                      verificationResult.ticket.usedAt && (
-                        <Alert className="border-yellow-200 bg-yellow-50">
-                          <AlertDescription className="text-yellow-800">
-                            This ticket was already used on{" "}
-                            {new Date(
-                              verificationResult.ticket.usedAt
-                            ).toLocaleString()}
-                          </AlertDescription>
-                        </Alert>
-                      )}
-                  </div>
-                )}
-              </div>
-            )}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Invalid Attempts
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {stats.invalidTickets}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Instructions */}
-      <Card className="mt-8">
+      <Card>
         <CardHeader>
-          <CardTitle>Instructions</CardTitle>
+          <CardTitle>Ticket Scan History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-            <div>
-              <h4 className="font-semibold mb-2">How to Scan Tickets:</h4>
-              <ul className="space-y-1 text-gray-600">
-                <li>• Use the QR scanner or manual entry</li>
-                <li>• Valid tickets will show green status</li>
-                <li>• Invalid/used tickets show red status</li>
-                <li>• Each ticket can only be used once</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Attendee Information:</h4>
-              <ul className="space-y-1 text-gray-600">
-                <li>• Name and contact details are displayed</li>
-                <li>• Verify identity if needed</li>
-                <li>• Check ticket type and price</li>
-                <li>• Note any special requirements</li>
-              </ul>
-            </div>
-          </div>
+          <Tabs defaultValue="all">
+            <TabsList className="mb-4">
+              <TabsTrigger value="all">All Tickets</TabsTrigger>
+              <TabsTrigger value="scanned">Scanned</TabsTrigger>
+              <TabsTrigger value="unscanned">Not Scanned</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all">
+              <TicketTable tickets={tickets} />
+            </TabsContent>
+
+            <TabsContent value="scanned">
+              <TicketTable
+                tickets={tickets.filter((ticket: any) => ticket.isUsed)}
+              />
+            </TabsContent>
+
+            <TabsContent value="unscanned">
+              <TicketTable
+                tickets={tickets.filter((ticket: any) => !ticket.isUsed)}
+              />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function TicketTable({ tickets }: { tickets: any[] }) {
+  if (tickets.length === 0) {
+    return (
+      <div className="text-center py-10 text-gray-500">No tickets found.</div>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Ticket ID</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Attendee</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Scanned At</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {tickets.map((ticket: any) => (
+            <TableRow key={ticket.id}>
+              <TableCell className="font-mono text-xs">
+                {ticket.id.substring(0, 8)}...
+              </TableCell>
+              <TableCell>{ticket.ticketType?.name || ticket.type}</TableCell>
+              <TableCell>{ticket.user?.name || "N/A"}</TableCell>
+              <TableCell>
+                {ticket.isUsed ? (
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1"
+                  >
+                    <CheckCircle className="h-3 w-3" />
+                    Scanned
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className="bg-gray-50 text-gray-700 border-gray-200"
+                  >
+                    Not Scanned
+                  </Badge>
+                )}
+              </TableCell>
+              <TableCell>
+                {ticket.usedAt ? (
+                  <span className="text-xs">
+                    {formatDate(ticket.usedAt)} at {formatTime(ticket.usedAt)}
+                  </span>
+                ) : (
+                  "—"
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
