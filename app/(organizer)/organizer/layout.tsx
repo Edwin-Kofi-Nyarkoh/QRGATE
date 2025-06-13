@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { OrganizerSidebar } from "@/components/organizer/organizer-sidebar";
 import { OrganizerHeader } from "@/components/organizer/organizer-header";
+import { SidebarToggleProvider } from "@/components/sidebar-toggle-context";
 
 export default async function OrganizerLayout({
   children,
@@ -17,14 +18,16 @@ export default async function OrganizerLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <OrganizerSidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <SidebarToggleProvider>
+      <div className="flex flex-col min-h-screen bg-background">
         <OrganizerHeader />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-          {children}
-        </main>
+        <div className="flex flex-1 min-h-0">
+          <OrganizerSidebar />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 bg-background">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarToggleProvider>
   );
 }
