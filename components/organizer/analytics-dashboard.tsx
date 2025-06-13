@@ -104,7 +104,7 @@ export function AnalyticsDashboard() {
   const stats = [
     {
       title: "Total Revenue",
-      value: `$${totalRevenue.toFixed(2)}`,
+      value: `Ghc${totalRevenue.toFixed(2)}`,
       change: "+12.5%",
       trend: "up",
       icon: DollarSign,
@@ -125,7 +125,7 @@ export function AnalyticsDashboard() {
     },
     {
       title: "Avg. Ticket Price",
-      value: `$${averageTicketPrice.toFixed(2)}`,
+      value: `Ghc${averageTicketPrice.toFixed(2)}`,
       change: "-2.1%",
       trend: "down",
       icon: TrendingUp,
@@ -134,6 +134,15 @@ export function AnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Underdevelopment Banner */}
+      <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
+        <div className="flex items-center">
+          <div className="text-yellow-700 font-semibold">
+            This analytics for organizers feature is under development. Stay
+            tuned for updates!
+          </div>
+        </div>
+      </div>
       {/* Period Selector */}
       <div className="flex justify-between items-center">
         <div>
@@ -298,7 +307,7 @@ export function AnalyticsDashboard() {
                         </div>
                         <div className="text-right">
                           <div className="font-medium">
-                            ${event.revenue.toFixed(2)}
+                            Ghc{event.revenue.toFixed(2)}
                           </div>
                           <div className="text-sm text-gray-600">
                             {event.sold}/{event.total} sold
