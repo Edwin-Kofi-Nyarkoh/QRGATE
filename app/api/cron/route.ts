@@ -12,39 +12,39 @@ export async function GET(request: Request) {
 
     const now = new Date();
 
-    // Update events that have started but not ended to ONGOING
-    const startedEvents = await prisma.event.updateMany({
+    // Set status to ONGOING for all events where startDate <= now < endDate
+    const ongoingEvents = await prisma.event.updateMany({
       where: {
-        startDate: {
-          lte: now,
-        },
-        endDate: {
-          gt: now,
-        },
-        status: "UPCOMING",
+        startDate: { lte: now },
+        endDate: { gt: now },
+        status: { not: "ONGOING" },
       },
-      data: {
-        status: "ONGOING",
-      },
+      data: { status: "ONGOING" },
     });
 
-    // Update events that have ended to COMPLETED
-    const endedEvents = await prisma.event.updateMany({
+    // Set status to COMPLETED for all events where endDate <= now
+    const completedEvents = await prisma.event.updateMany({
       where: {
-        endDate: {
-          lte: now,
-        },
-        status: "ONGOING",
+        endDate: { lte: now },
+        status: { not: "COMPLETED" },
       },
-      data: {
-        status: "COMPLETED",
+      data: { status: "COMPLETED" },
+    });
+
+    // Set status to UPCOMING for all events where startDate > now
+    const upcomingEvents = await prisma.event.updateMany({
+      where: {
+        startDate: { gt: now },
+        status: { not: "UPCOMING" },
       },
+      data: { status: "UPCOMING" },
     });
 
     return NextResponse.json({
       success: true,
-      startedEvents: startedEvents.count,
-      endedEvents: endedEvents.count,
+      updatedToOngoing: ongoingEvents.count,
+      updatedToCompleted: completedEvents.count,
+      updatedToUpcoming: upcomingEvents.count,
       timestamp: now.toISOString(),
     });
   } catch (error) {

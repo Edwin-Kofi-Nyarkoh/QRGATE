@@ -61,7 +61,7 @@ export function EventsSection() {
                 Live Events
               </h2>
               <Button variant="outline" size="sm" asChild>
-                <Link href="/events?status=ONGOING">VIEW ALL</Link>
+                <Link href="/events?dateFilter=ongoing">VIEW ALL</Link>
               </Button>
             </div>
 

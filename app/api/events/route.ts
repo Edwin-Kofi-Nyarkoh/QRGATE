@@ -5,10 +5,11 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
-    const status = searchParams.get("status") || "UPCOMING";
+    const status = searchParams.get("status");
     const limit = Number.parseInt(searchParams.get("limit") || "10");
     const page = Number.parseInt(searchParams.get("page") || "1");
     const organizerId = searchParams.get("organizerId");
+    const dateFilter = searchParams.get("dateFilter"); // 'upcoming', 'past', 'ongoing'
 
     const now = new Date();
     let where: any = {
@@ -16,16 +17,19 @@ export async function GET(request: NextRequest) {
       ...(organizerId && { organizerId }),
     };
 
-    if (status === "UPCOMING") {
+    // Only apply date-based filtering if dateFilter is explicitly provided
+    if (dateFilter === "upcoming") {
       where.endDate = { gte: now };
-    } else if (status === "PAST") {
+    } else if (dateFilter === "past") {
       where.endDate = { lt: now };
-    } else if (status === "ONGOING") {
+    } else if (dateFilter === "ongoing") {
       where.startDate = { lte: now };
       where.endDate = { gte: now };
-    } else {
+    } else if (status) {
+      // Only filter by status if provided
       where.status = status;
     }
+    // If neither status nor dateFilter is provided, return all events (optionally, you can default to upcoming if you want)
 
     const events = await prisma.event.findMany({
       where,

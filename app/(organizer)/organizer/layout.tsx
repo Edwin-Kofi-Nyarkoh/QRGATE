@@ -5,18 +5,18 @@ import { redirect } from "next/navigation";
 import { OrganizerSidebar } from "@/components/organizer/organizer-sidebar";
 import { OrganizerHeader } from "@/components/organizer/organizer-header";
 import { SidebarToggleProvider } from "@/components/sidebar-toggle-context";
+import { getCurrentUser } from "@/app/api/auth/actions";
 
 export default async function OrganizerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const user = await getCurrentUser();
 
-  if (!session) {
+  if (!user || !user.isOrganizer) {
     redirect("/auth/signin");
   }
-
   return (
     <SidebarToggleProvider>
       <div className="flex flex-col min-h-screen bg-background">

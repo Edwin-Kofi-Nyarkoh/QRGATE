@@ -1,19 +1,17 @@
 import type React from "react";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { SidebarToggleProvider } from "@/components/sidebar-toggle-context";
+import { getCurrentUser } from "../api/auth/actions";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
+  const user = await getCurrentUser();
+  if (!user) {
     redirect("/auth/signin");
   }
 

@@ -18,7 +18,11 @@ import type {
 // API functions
 export const eventsApi = {
   getEvents: async (
-    params?: EventFilters & { page?: number; limit?: number }
+    params?: EventFilters & {
+      page?: number;
+      limit?: number;
+      dateFilter?: string;
+    }
   ): Promise<PaginatedResponse<Event>> => {
     const searchParams = new URLSearchParams();
 
@@ -59,28 +63,28 @@ export const eventsApi = {
 
   getFeaturedEvents: async (): Promise<Event[]> => {
     const response = await apiGet<PaginatedResponse<Event>>(
-      "/events?status=UPCOMING&limit=6"
+      "/events?dateFilter=upcoming&limit=6"
     );
     return response.events;
   },
 
   getUpcomingEvents: async (): Promise<Event[]> => {
     const response = await apiGet<PaginatedResponse<Event>>(
-      "/events?status=UPCOMING&limit=4"
+      "/events?dateFilter=upcoming&limit=4"
     );
     return response.events;
   },
 
   getOngoingEvents: async (): Promise<Event[]> => {
     const response = await apiGet<PaginatedResponse<Event>>(
-      "/events?status=ONGOING&limit=4"
+      "/events?dateFilter=ongoing&limit=4"
     );
     return response.events;
   },
 
   getPastEvents: async (): Promise<Event[]> => {
     const response = await apiGet<PaginatedResponse<Event>>(
-      "/events?status=PAST&limit=4"
+      "/events?dateFilter=past&limit=4"
     );
     return response.events;
   },
