@@ -22,8 +22,9 @@ import { ImageGallery } from "@/components/events/image-gallery";
 import { BuyNowButton } from "@/components/events/buy-now-button";
 import { useCartStore } from "@/lib/store/cart-store";
 import { toast } from "sonner";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+// import { Label } from "@/components/ui/label";
+import { TicketTypeSelector } from "@/components/ui/ticket-type-selector";
 
 interface EventDetailsProps {
   event: any; // Using any for simplicity, but should be properly typed
@@ -31,20 +32,14 @@ interface EventDetailsProps {
 
 export function EventDetails({ event }: EventDetailsProps) {
   const [selectedTab, setSelectedTab] = useState("details");
+  // Ticket type selection state and logic
   const [selectedTicketType, setSelectedTicketType] = useState(
     event.ticketTypes && event.ticketTypes.length > 0
       ? event.ticketTypes[0].id
-      : "standard"
+      : undefined
   );
   const [quantity, setQuantity] = useState(1);
-  const [showQuantity, setShowQuantity] = useState(false);
   const { addItem, items } = useCartStore();
-
-  // Find if this event is already in cart with the selected ticket type
-  const isInCart = items.some(
-    (item) =>
-      item.eventId === event.id && item.ticketTypeId === selectedTicketType
-  );
 
   // Get the selected ticket type object
   const ticketType = event.ticketTypes?.find(
@@ -57,9 +52,18 @@ export function EventDetails({ event }: EventDetailsProps) {
     soldCount: event.soldTickets,
     description: "Standard admission ticket",
   };
-
-  // Calculate available tickets for the selected type
   const availableTickets = ticketType.quantity - ticketType.soldCount;
+
+  // Find if this event is already in cart with the selected ticket type
+  const isInCart = items.some(
+    (item) => item.eventId === event.id && item.ticketTypeId === ticketType.id
+  );
+
+  // Handler for ticket type selection
+  const handleTicketSelect = (typeId: string, qty: number) => {
+    setSelectedTicketType(typeId);
+    setQuantity(qty);
+  };
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -76,49 +80,6 @@ export function EventDetails({ event }: EventDetailsProps) {
       // Fallback for browsers that don't support the Web Share API
       navigator.clipboard.writeText(window.location.href);
       alert("Link copied to clipboard!");
-    }
-  };
-
-  const handleAddToCart = () => {
-    if (showQuantity) {
-      addItem({
-        id: `${event.id}-${ticketType.id}-${Date.now()}`,
-        eventId: event.id,
-        eventTitle: event.title,
-        eventImage: event.mainImage || undefined,
-        eventDate: event.startDate.toString(),
-        eventLocation: event.location,
-        ticketType: ticketType.name,
-        ticketTypeId: ticketType.id,
-        price: ticketType.price,
-        quantity: quantity,
-        maxQuantity: Math.min(10, availableTickets),
-        title: event.title,
-        image: event.mainImage || "",
-        startDate: event.startDate.toString(),
-      });
-
-      toast.success("Added to cart", {
-        description: `${quantity} ${ticketType.name} ticket${
-          quantity > 1 ? "s" : ""
-        } for ${event.title}`,
-      });
-
-      setShowQuantity(false);
-    } else {
-      setShowQuantity(true);
-    }
-  };
-
-  const incrementQuantity = () => {
-    if (quantity < Math.min(10, availableTickets)) {
-      setQuantity(quantity + 1);
-    }
-  };
-
-  const decrementQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
     }
   };
 
@@ -202,101 +163,30 @@ export function EventDetails({ event }: EventDetailsProps) {
               <EventCountdown date={new Date(event.startDate)} />
 
               {/* Ticket Type Selection */}
-              {event.ticketTypes && event.ticketTypes.length > 0 ? (
-                <div className="space-y-4">
-                  <h3 className="font-medium">Select Ticket Type</h3>
-                  <RadioGroup
-                    value={selectedTicketType}
-                    onValueChange={(value) => {
-                      setSelectedTicketType(value);
-                      setShowQuantity(false);
-                    }}
-                    className="space-y-3"
-                  >
-                    {event.ticketTypes.map((type: any) => {
-                      const available = type.quantity - type.soldCount;
-                      return (
-                        <div
-                          key={type.id}
-                          className="flex items-center space-x-2 border p-3 rounded-md"
-                        >
-                          <RadioGroupItem
-                            value={type.id}
-                            id={type.id}
-                            disabled={available <= 0}
-                          />
-                          <Label htmlFor={type.id} className="flex-1">
-                            <div className="flex justify-between">
-                              <div>
-                                <div className="font-medium">{type.name}</div>
-                                <div className="text-sm text-gray-500">
-                                  {type.description}
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="font-bold text-primary">
-                                  Ghc{type.price.toFixed(2)}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {available} available
-                                </div>
-                              </div>
-                            </div>
-                          </Label>
-                        </div>
-                      );
-                    })}
-                  </RadioGroup>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <h3 className="font-medium">Standard Ticket</h3>
-                  <div className="border p-3 rounded-md">
-                    <div className="flex justify-between">
-                      <div>
-                        <div className="font-medium">Standard</div>
-                        <div className="text-sm text-gray-500">
-                          General admission
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-primary">
-                          Ghc{event.price.toFixed(2)}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {event.totalTickets - event.soldTickets} available
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <TicketTypeSelector
+                ticketTypes={
+                  event.ticketTypes && event.ticketTypes.length > 0
+                    ? event.ticketTypes
+                    : [
+                        {
+                          id: "standard",
+                          name: "Standard",
+                          price: event.price,
+                          quantity: event.totalTickets,
+                          soldCount: event.soldTickets,
+                          description: "Standard admission ticket",
+                        },
+                      ]
+                }
+                onSelect={handleTicketSelect}
+                initialTypeId={selectedTicketType}
+              />
 
-              {/* Quantity Selector */}
+              {/* Quantity and Add to Cart */}
               <div className="space-y-2">
                 <h3 className="font-medium">Quantity</h3>
                 <div className="flex items-center border rounded-md">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={decrementQuantity}
-                    disabled={quantity <= 1}
-                    className="rounded-r-none"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <div className="flex-1 text-center py-2">{quantity}</div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={incrementQuantity}
-                    disabled={quantity >= availableTickets}
-                    className="rounded-l-none"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                  <span className="flex-1 text-center py-2">{quantity}</span>
                 </div>
                 <p className="text-sm text-gray-500">
                   {availableTickets} tickets remaining
@@ -318,7 +208,29 @@ export function EventDetails({ event }: EventDetailsProps) {
               <div className="space-y-3">
                 <Button
                   className="w-full"
-                  onClick={handleAddToCart}
+                  onClick={() => {
+                    addItem({
+                      id: `${event.id}-${ticketType.id}-${Date.now()}`,
+                      eventId: event.id,
+                      eventTitle: event.title,
+                      eventImage: event.mainImage || undefined,
+                      eventDate: event.startDate.toString(),
+                      eventLocation: event.location,
+                      ticketType: ticketType.name,
+                      ticketTypeId: ticketType.id,
+                      price: ticketType.price,
+                      quantity: quantity,
+                      maxQuantity: Math.min(10, availableTickets),
+                      title: event.title,
+                      image: event.mainImage || "",
+                      startDate: event.startDate.toString(),
+                    });
+                    toast.success("Added to cart", {
+                      description: `${quantity} ${ticketType.name} ticket${
+                        quantity > 1 ? "s" : ""
+                      } for ${event.title}`,
+                    });
+                  }}
                   disabled={availableTickets <= 0 || isInCart}
                 >
                   {isInCart ? "Already in Cart" : "Add to Cart"}

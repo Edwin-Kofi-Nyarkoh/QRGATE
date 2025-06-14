@@ -27,6 +27,7 @@ import { formatDate } from "@/lib/date-utils";
 import { CartItem, useCartStore } from "@/lib/store/cart-store";
 import { toast } from "sonner";
 import { Event } from "@/lib/services";
+import { TicketTypeSelector } from "@/components/ui/ticket-type-selector";
 
 const categories = [
   "All Categories",
@@ -47,6 +48,10 @@ export function EventsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
   const [sortBy, setSortBy] = useState("startDate");
+  const [selectedTicketTypeIds, setSelectedTicketTypeIds] = useState<
+    Record<string, string>
+  >({});
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   const { addItem } = useCartStore();
 
@@ -68,24 +73,37 @@ export function EventsPage() {
   const availableTickets =
     (eventsData?.totalTickets ?? 0) - (eventsData?.soldTickets ?? 0);
 
+  const handleTicketSelect = (eventId: string, typeId: string, qty: number) => {
+    setSelectedTicketTypeIds((prev) => ({ ...prev, [eventId]: typeId }));
+    setQuantities((prev) => ({ ...prev, [eventId]: qty }));
+  };
+
   const handleAddToCart = (event: Event) => {
+    const ticketTypeId =
+      selectedTicketTypeIds[event.id] || event.ticketTypes?.[0]?.id;
+    const ticketType = event.ticketTypes?.find((t) => t.id === ticketTypeId);
+    const quantity = quantities[event.id] || 1;
+    if (!ticketType) return;
     addItem({
+      id: `${event.id}-${ticketType.id}-${Date.now()}`,
       eventId: event.id,
       eventTitle: event.title,
       eventImage: event.mainImage || undefined,
       eventDate: event.startDate.toString(),
       eventLocation: event.location,
-      ticketType: "Standard",
-      price: event.price,
-      quantity: 1,
-      maxQuantity: Math.min(10, availableTickets),
+      ticketType: ticketType.name,
+      ticketTypeId: ticketType.id,
+      price: ticketType.price,
+      quantity: quantity,
+      maxQuantity: Math.min(10, ticketType.quantity - ticketType.soldCount),
       title: event.title,
       image: event.mainImage || "",
       startDate: event.startDate.toString(),
     });
-
     toast("Added to cart", {
-      description: `${event.title} has been added to your cart`,
+      description: `${quantity} ${ticketType.name} ticket${
+        quantity > 1 ? "s" : ""
+      } for ${event.title}`,
     });
   };
 
@@ -113,7 +131,7 @@ export function EventsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+      <div className="bg-background rounded-lg shadow-sm p-6 mb-8">
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
@@ -165,7 +183,7 @@ export function EventsPage() {
 
       {/* Events Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {Array.from({ length: 12 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
               <div className="h-48 bg-gray-200 rounded-t-lg" />
@@ -184,80 +202,111 @@ export function EventsPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {eventsData?.events?.map((event) => (
-              <Card
-                key={event.id}
-                className="overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                <div className="relative h-48">
-                  <Image
-                    src={
-                      event.mainImage || "/placeholder.svg?height=200&width=300"
-                    }
-                    alt={event.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <Badge
-                    className={`absolute top-2 right-2 ${
-                      event.status === "UPCOMING"
-                        ? "bg-green-500"
-                        : event.status === "ONGOING"
-                        ? "bg-blue-500"
-                        : event.status === "COMPLETED"
-                        ? "bg-gray-500"
-                        : "bg-red-500"
-                    }`}
-                  >
-                    {event.status}
-                  </Badge>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+            {eventsData?.events?.map((event) => {
+              const ticketTypes = event.ticketTypes || [
+                {
+                  id: "standard",
+                  name: "Standard",
+                  price: event.price,
+                  quantity: event.totalTickets,
+                  soldCount: event.soldTickets,
+                  description: "Standard admission ticket",
+                },
+              ];
+              const selectedTypeId =
+                selectedTicketTypeIds[event.id] || ticketTypes[0].id;
+              const selectedType =
+                ticketTypes.find((t) => t.id === selectedTypeId) ||
+                ticketTypes[0];
+              const availableTickets =
+                selectedType.quantity - selectedType.soldCount;
+              const quantity = quantities[event.id] || 1;
+              return (
+                <Card
+                  key={event.id}
+                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <div className="relative h-48">
+                    <Image
+                      src={
+                        event.mainImage ||
+                        "/placeholder.svg?height=200&width=300"
+                      }
+                      alt={event.title}
+                      fill
+                      className="object-cover"
+                    />
+                    <Badge
+                      className={`absolute top-2 right-2 ${
+                        event.status === "UPCOMING"
+                          ? "bg-green-500"
+                          : event.status === "ONGOING"
+                          ? "bg-blue-500"
+                          : event.status === "COMPLETED"
+                          ? "bg-gray-500"
+                          : "bg-red-500"
+                      }`}
+                    >
+                      {event.status}
+                    </Badge>
+                  </div>
 
-                <CardHeader>
-                  <h3 className="font-semibold text-lg line-clamp-2">
-                    {event.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {event.description}
-                  </p>
-                </CardHeader>
+                  <CardHeader>
+                    <h3 className="font-semibold text-lg line-clamp-2">
+                      {event.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {event.description}
+                    </p>
+                  </CardHeader>
 
-                <CardContent className="space-y-2">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    {formatDate(event.startDate)}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    {event.location}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Users className="w-4 h-4 mr-2" />
-                    {event.totalTickets - event.soldTickets} tickets left
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-primary">
-                      Ghc{event.price}
-                    </span>
-                    <Badge variant="secondary">{event.category}</Badge>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="flex gap-2">
-                  <Button asChild variant="outline" className="flex-1">
-                    <Link href={`/events/${event.id}`}>View Details</Link>
-                  </Button>
-                  <Button
-                    onClick={() => handleAddToCart(event)}
-                    className="flex-1 bg-green-500 hover:bg-primary"
-                    disabled={event.soldTickets >= event.totalTickets}
-                  >
-                    Add to Cart
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      {formatDate(event.startDate)}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="w-4 h-4 mr-2" />
+                      {event.location}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Users className="w-4 h-4 mr-2" />
+                      {event.totalTickets - event.soldTickets} tickets left
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-primary">
+                        Ghc{event.price}
+                      </span>
+                      <Badge variant="secondary">{event.category}</Badge>
+                    </div>
+                    {event.ticketTypes && event.ticketTypes.length > 0 && (
+                      <div className="mb-3">
+                        <TicketTypeSelector
+                          ticketTypes={ticketTypes}
+                          onSelect={(typeId, qty) =>
+                            handleTicketSelect(event.id, typeId, qty)
+                          }
+                          initialTypeId={selectedTypeId}
+                        />
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="flex gap-2">
+                    <Button asChild variant="outline" className="flex-1">
+                      <Link href={`/events/${event.id}`}>View Details</Link>
+                    </Button>
+                    <Button
+                      onClick={() => handleAddToCart(event)}
+                      className="flex-1 bg-green-500 hover:bg-primary"
+                      disabled={availableTickets <= 0}
+                    >
+                      Add to Cart
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
           </div>
 
           {/* Pagination */}
