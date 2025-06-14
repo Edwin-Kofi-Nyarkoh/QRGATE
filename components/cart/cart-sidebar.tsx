@@ -16,7 +16,7 @@ import { formatDateTime } from "@/lib/date-utils";
 import Image from "next/image";
 import Link from "next/link";
 
-export function CartSidebar() {
+export function CartSidebar({ onClose }: { onClose?: () => void }) {
   const {
     items,
     removeItem,
@@ -39,11 +39,11 @@ export function CartSidebar() {
           <div className="text-center">
             <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Your cart is empty</h3>
-            <p className="text-gray-600 mb-4">
-              Add some tickets to get started!
-            </p>
+            <p className="text-gray-600 mb-4">Add some tickets to get started!</p>
             <Button asChild>
-              <Link href="/events">Browse Events</Link>
+              <Link href="/events" onClick={() => onClose?.()}>
+                Browse Events
+              </Link>
             </Button>
           </div>
         </div>
@@ -52,7 +52,7 @@ export function CartSidebar() {
   }
 
   return (
-    <div className=" flex flex-col">
+    <div className="flex flex-col">
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between">
@@ -63,13 +63,13 @@ export function CartSidebar() {
 
       {/* Cart Items */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {items.map((item) => (
-          <div key={item.id} className="border rounded-lg p-4">
+        {items.map((item, index) => (
+          <div key={item.id ?? `cart-item-${index}`} className="border rounded-lg p-4">
             <div className="flex gap-3">
               <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
                 <Image
                   src={item.eventImage || "/placeholder.svg?height=64&width=64"}
-                  alt={item.eventTitle ?? " Event Image"}
+                  alt={item.eventTitle ?? "Event Image"}
                   fill
                   className="object-cover"
                 />
@@ -111,7 +111,7 @@ export function CartSidebar() {
                   size="icon"
                   className="h-6 w-6"
                   onClick={() =>
-                    updateQuantity(item.id, item?.quantity ?? 0 - 1)
+                    updateQuantity(item.id, (item.quantity ?? 1) - 1)
                   }
                   disabled={(item?.quantity ?? 1) <= 1}
                 >
@@ -125,7 +125,7 @@ export function CartSidebar() {
                   size="icon"
                   className="h-6 w-6"
                   onClick={() =>
-                    updateQuantity(item.id, (item?.quantity ?? 0) + 1)
+                    updateQuantity(item.id, (item.quantity ?? 0) + 1)
                   }
                   disabled={
                     (item.quantity ?? 0) >= (item.maxQuantity ?? Infinity)
@@ -163,10 +163,14 @@ export function CartSidebar() {
 
         <div className="space-y-2">
           <Button asChild className="w-full">
-            <Link href="/cart">View Cart</Link>
+            <Link href="/cart" onClick={() => onClose?.()}>
+              View Cart
+            </Link>
           </Button>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/checkout">Checkout</Link>
+            <Link href="/checkout" onClick={() => onClose?.()}>
+              Checkout
+            </Link>
           </Button>
         </div>
       </div>

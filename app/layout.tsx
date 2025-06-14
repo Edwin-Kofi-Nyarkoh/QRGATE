@@ -25,8 +25,8 @@ export const metadata: Metadata = {
   ],
   authors: [
     {
-      name: "Edwin Nyarkoh",
-      url: "",
+      name: "Edwin Kofi Nyarkoh",
+      url: "www.github.com/Edwin-Kofi-Nyarkoh",
     },
     {
       name: "Masood Acheampong",

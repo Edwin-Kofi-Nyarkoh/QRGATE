@@ -85,8 +85,8 @@ export function CartPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => (
-              <Card key={item.id}>
+            {items.map((item, index) => (
+              <Card key={item.id?? `cart-item-${index}`}>
                 <CardContent className="p-6">
                   <div className="flex gap-4">
                     <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
