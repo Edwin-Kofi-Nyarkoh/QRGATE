@@ -10,11 +10,22 @@ export async function GET(request: NextRequest) {
     const page = Number.parseInt(searchParams.get("page") || "1");
     const organizerId = searchParams.get("organizerId");
 
-    const where = {
-      status: status as any,
+    const now = new Date();
+    let where: any = {
       ...(category && { category: category.toLowerCase() }),
       ...(organizerId && { organizerId }),
     };
+
+    if (status === "UPCOMING") {
+      where.endDate = { gte: now };
+    } else if (status === "PAST") {
+      where.endDate = { lt: now };
+    } else if (status === "ONGOING") {
+      where.startDate = { lte: now };
+      where.endDate = { gte: now };
+    } else {
+      where.status = status;
+    }
 
     const events = await prisma.event.findMany({
       where,

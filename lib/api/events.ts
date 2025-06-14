@@ -78,6 +78,13 @@ export const eventsApi = {
     return response.events;
   },
 
+  getPastEvents: async (): Promise<Event[]> => {
+    const response = await apiGet<PaginatedResponse<Event>>(
+      "/events?status=PAST&limit=4"
+    );
+    return response.events;
+  },
+
   getDiscoverEvents: async (): Promise<Event[]> => {
     const response = await apiGet<PaginatedResponse<Event>>("/events?limit=8");
     return response.data;
@@ -95,6 +102,7 @@ export const eventKeys = {
   featured: () => [...eventKeys.all, "featured"] as const,
   upcoming: () => [...eventKeys.all, "upcoming"] as const,
   ongoing: () => [...eventKeys.all, "ongoing"] as const,
+  past: () => [...eventKeys.all, "past"] as const,
   discover: () => [...eventKeys.all, "discover"] as const,
 };
 
@@ -155,12 +163,12 @@ export const useOngoingEvents = (
   });
 };
 
-export const useDiscoverEvents = (
+export const usePastEvents = (
   options?: Omit<UseQueryOptions<Event[]>, "queryKey" | "queryFn">
 ) => {
   return useQuery({
-    queryKey: eventKeys.discover(),
-    queryFn: eventsApi.getDiscoverEvents,
+    queryKey: ["events", "past"],
+    queryFn: eventsApi.getPastEvents,
     ...options,
   });
 };
