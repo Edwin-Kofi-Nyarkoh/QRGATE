@@ -3,7 +3,12 @@ import { getClient } from "@/lib/services/api-client";
 const apiClient = getClient();
 
 // Fetch tickets for a user
-export const useUserTickets = (userId?: string, orderId?: string, page = 1, limit = 10) => {
+export const useUserTickets = (
+  userId?: string,
+  orderId?: string,
+  page = 1,
+  limit = 10
+) => {
   return useQuery({
     queryKey: ["tickets", userId, orderId, page, limit],
     queryFn: async () => {
@@ -23,6 +28,7 @@ export const useEventTickets = (eventId: string, page = 1, limit = 10) => {
       const response = await apiClient.get(
         `/tickets?eventId=${eventId}&page=${page}&limit=${limit}`
       );
+      console.log("Event tickets response:", response.data);
       return response.data;
     },
     enabled: !!eventId,

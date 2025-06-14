@@ -162,16 +162,16 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
     };
   }, []);
 
-  if (!session) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Unauthorized</AlertTitle>
-        <AlertDescription>
-          You must be logged in to scan tickets.
-        </AlertDescription>
-      </Alert>
-    );
-  }
+  // if (!session) {
+  //   return (
+  //     <Alert variant="destructive">
+  //       <AlertTitle>Unauthorized</AlertTitle>
+  //       <AlertDescription>
+  //         You must be logged in to scan tickets.
+  //       </AlertDescription>
+  //     </Alert>
+  //   );
+  // }
 
   return (
     <div className="space-y-6">

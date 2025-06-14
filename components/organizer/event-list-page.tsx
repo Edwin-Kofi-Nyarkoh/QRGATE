@@ -282,6 +282,16 @@ export function EventListPage() {
                                 Edit Event
                               </Link>
                             </DropdownMenuItem>
+                            {/* Security Officers */}
+                            <DropdownMenuItem asChild>
+                              <Link
+                                href={`/organizer/events/${event.id}/security`}
+                              >
+                                <Users className="w-4 h-4 mr-2" />
+                                View Ticket Security Officers
+                              </Link>
+                            </DropdownMenuItem>
+                            {/* Attendees */}
                             <DropdownMenuItem asChild>
                               <Link
                                 href={`/organizer/events/${event.id}/attendees`}
