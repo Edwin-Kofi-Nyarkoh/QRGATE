@@ -22,7 +22,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="py-16 bg-background dark:bg-primary-foreground">
+    <section className="py-16 bg-background ">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid md:grid-cols-3 gap-8">
           {features.map((feature, index) => (
