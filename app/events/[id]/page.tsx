@@ -42,6 +42,7 @@ export default async function EventPage({
           phone: true,
         },
       },
+      ticketTypes: true,
       images: true,
       _count: {
         select: {
@@ -64,6 +65,7 @@ export default async function EventPage({
       status: "UPCOMING",
     },
     include: {
+      ticketTypes: true,
       _count: {
         select: {
           tickets: true,

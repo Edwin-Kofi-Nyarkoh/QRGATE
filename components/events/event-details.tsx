@@ -83,6 +83,19 @@ export function EventDetails({ event }: EventDetailsProps) {
     }
   };
 
+  const ticketTypes = event.ticketTypes || [
+    {
+      id: "standard",
+      name: "Standard",
+      price: event.price,
+      quantity: event.totalTickets,
+      soldCount: event.soldTickets,
+      description: "Standard admission ticket",
+    },
+  ];
+
+  console.log("Ticket Types:", event);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid md:grid-cols-3 gap-8">
@@ -143,9 +156,11 @@ export function EventDetails({ event }: EventDetailsProps) {
                   width="100%"
                   height="100%"
                   frameBorder="0"
-                  src={`https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent(
+                  src={`https://www.google.com/maps/embed/v1/view
+  ?key=${process.env.GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(
                     event.location
                   )}`}
+                  referrerPolicy="no-referrer-when-downgrade"
                   allowFullScreen
                 ></iframe>
               </div>
@@ -162,34 +177,10 @@ export function EventDetails({ event }: EventDetailsProps) {
 
               {/* Ticket Type Selection */}
               <TicketTypeSelector
-                ticketTypes={
-                  event.ticketTypes && event.ticketTypes.length > 0
-                    ? event.ticketTypes
-                    : [
-                        {
-                          id: "standard",
-                          name: "Standard",
-                          price: event.price,
-                          quantity: event.totalTickets,
-                          soldCount: event.soldTickets,
-                          description: "Standard admission ticket",
-                        },
-                      ]
-                }
+                ticketTypes={ticketTypes}
                 onSelect={handleTicketSelect}
                 initialTypeId={selectedTicketType}
               />
-
-              {/* Quantity and Add to Cart */}
-              <div className="space-y-2">
-                <h3 className="font-medium">Quantity</h3>
-                <div className="flex items-center border rounded-md">
-                  <span className="flex-1 text-center py-2">{quantity}</span>
-                </div>
-                <p className="text-sm text-gray-500">
-                  {availableTickets} tickets remaining
-                </p>
-              </div>
 
               {/* Price Summary */}
               <div className="space-y-1 border-t pt-4">

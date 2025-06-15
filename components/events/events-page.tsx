@@ -121,6 +121,8 @@ export function EventsPage() {
     );
   }
 
+  console.log("Ticket Types:", eventsData?.events);
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
