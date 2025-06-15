@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import otpGenerator from "otp-generator";
-import { transporter } from "@/lib/nodemailer";
+import { transporter } from "@/lib/email/nodemailer";
 
 export async function POST(req: Request) {
   const { email, password } = await req.json();

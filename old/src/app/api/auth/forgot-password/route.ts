@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { v4 as uuidv4 } from "uuid";
-import { transporter } from "@/lib/nodemailer";
+import { transporter } from "@/lib/email/nodemailer";
 
 export async function POST(req: Request) {
   const { email } = await req.json();
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     where: { email },
     data: {
       passwordUuid: resetPasswordOtp,
-      otpExpiresAt
+      otpExpiresAt,
     },
   });
 

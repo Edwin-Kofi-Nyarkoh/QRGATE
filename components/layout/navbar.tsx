@@ -192,7 +192,7 @@ export function Navbar() {
             <>
               <Button
                 asChild
-                className="bg-transparent border border-white hover:bg-white hover:text-slate-800 dark:border-gray-200 dark:hover:bg-gray-200 dark:hover:text-slate-900"
+                className="bg-transparent border border-primary hover:bg-primary hover:text-white text-primary font-medium rounded-md px-4 py-2 transition-colors"
               >
                 <Link href="/auth/signin">JOIN US NOW</Link>
               </Button>

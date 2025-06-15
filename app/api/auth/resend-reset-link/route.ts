@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { transporter } from "@/lib/nodemailer";
+import { transporter } from "@/lib/email/nodemailer";
 import crypto from "crypto";
+import { resendResetLinkEmail } from "@/lib/email/auth-emails";
 
 export async function POST(req: Request) {
   try {
@@ -41,16 +42,15 @@ export async function POST(req: Request) {
       from: `"QRGATE" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Reset Your Password",
-      html: `
-        <p>Click the button below to reset your password:</p>
-        <p><a href="${resetLink}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a></p>
-        <p>This link will expire in 3 minutes.</p>
-      `,
+      html: resendResetLinkEmail({ resetUrl: resetLink }),
     });
 
     return NextResponse.json({ message: "Reset link sent" });
   } catch (error) {
     console.error("Resend Reset Link Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

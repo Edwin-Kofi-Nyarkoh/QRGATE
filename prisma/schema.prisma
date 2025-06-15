@@ -32,6 +32,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   securityOfficers SecurityOfficer[]
+  passwordResetToken PasswordResetToken?
   
   // NextAuth
   emailVerified DateTime?
@@ -193,6 +194,16 @@ model SecurityOfficer {
   eventId   String
 
   @@map("security_officers")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String  @unique
+  token     String
+  expires   DateTime
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
 }
 
 enum Role {

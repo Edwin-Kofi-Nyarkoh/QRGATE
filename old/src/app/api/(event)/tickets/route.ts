@@ -1,9 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { v4 as uuidv4 } from "uuid";
 import QRCode from "qrcode";
-import { transporter } from "@/lib/nodemailer";
+import { transporter } from "@/lib/email/nodemailer";
 import { NextResponse } from "next/server";
-
 
 export async function POST(req: Request) {
   try {
@@ -11,24 +10,33 @@ export async function POST(req: Request) {
     const { userId, total, reference, tickets } = await req.json();
 
     // 2. Verify payment with Paystack
-    const verifyRes = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const verifyRes = await fetch(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
     const verifyJson = await verifyRes.json();
     const paymentData = verifyJson.data;
 
     if (paymentData.status !== "success") {
-      return NextResponse.json({ message: "Payment not successful" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Payment not successful" },
+        { status: 400 }
+      );
     }
 
     // 3. Validate user exists and has email
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.email) {
-      return NextResponse.json({ message: "User not found or missing email" }, { status: 400 });
+      return NextResponse.json(
+        { message: "User not found or missing email" },
+        { status: 400 }
+      );
     }
 
     // 4. Create order record
@@ -41,15 +49,25 @@ export async function POST(req: Request) {
     });
 
     // 5. Prepare array to hold QR code info with data URLs (inside transaction)
-    const qrCodes: { code: string; eventId: number; eventName: string; quantity: number; dataUrl: string }[] = [];
+    const qrCodes: {
+      code: string;
+      eventId: number;
+      eventName: string;
+      quantity: number;
+      dataUrl: string;
+    }[] = [];
 
     // 6. For each ticket, do all DB ops + QR code generation in transaction
     for (const ticketData of tickets) {
       await prisma.$transaction(async (tx) => {
         // Fetch event & check stock
-        const event = await tx.event.findUnique({ where: { id: ticketData.eventId }, select: { id: true, name: true, stock: true }, });
+        const event = await tx.event.findUnique({
+          where: { id: ticketData.eventId },
+          select: { id: true, name: true, stock: true },
+        });
         if (!event) throw new Error(`Event ${ticketData.eventId} not found`);
-        if (event.stock < ticketData.quantity) throw new Error(`Not enough tickets for event ${ticketData.eventId}`);
+        if (event.stock < ticketData.quantity)
+          throw new Error(`Not enough tickets for event ${ticketData.eventId}`);
 
         // Generate unique code
         const code = uuidv4();
@@ -74,7 +92,6 @@ export async function POST(req: Request) {
           where: { id: ticketData.eventId },
           data: { stock: { decrement: ticketData.quantity } },
         });
-
 
         // Add to qrCodes array for email after transaction commits
         qrCodes.push({
@@ -129,7 +146,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     } else {
       console.error("Unknown error:", error);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 }
+      );
     }
   }
 }

@@ -72,10 +72,12 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex py-5 items-center justify-center md:px-4">
+      <Card className="w-full sm:max-w-sm max-w-auto md:max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Forgot Password</CardTitle>
+          <CardTitle className="text-2xl text-center">
+            Forgot Password
+          </CardTitle>
           <CardDescription className="text-center">
             Enter your email to receive a reset link
           </CardDescription>
@@ -92,7 +94,11 @@ export default function ForgotPassword() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              <Button onClick={handleResend} disabled={resending} variant="outline">
+              <Button
+                onClick={handleResend}
+                disabled={resending}
+                variant="outline"
+              >
                 {resending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />

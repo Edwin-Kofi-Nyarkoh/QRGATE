@@ -7,10 +7,10 @@ import type { NextAuthOptions } from "next-auth";
 
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
-import { transporter } from "@/lib/nodemailer";
+import { transporter } from "@/lib/email/nodemailer";
 import { getClientInfo } from "@/lib/getClientInfo";
 
-export const authOptions: NextAuthOptions = ({
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
@@ -51,81 +51,92 @@ export const authOptions: NextAuthOptions = ({
           });
 
           //send alert message
-          if(user.email){
+          if (user.email) {
             await transporter.sendMail({
-                from: `"GRGATE" <${process.env.EMAIL_USER}>`,
-                to: user.email,
-                subject: "⚠️ Failed Login Attempt Detected",
-                html: `
+              from: `"GRGATE" <${process.env.EMAIL_USER}>`,
+              to: user.email,
+              subject: "⚠️ Failed Login Attempt Detected",
+              html: `
                   <h2>Hi ${user.name || "User"},</h2>
                   <p>We detected a failed login attempt on your account:</p>
                   <ul>
                     <li><strong>IP:</strong> ${clientInfo.ip}</li>
-                    <li><strong>User Agent:</strong> ${clientInfo.userAgent}</li>
+                    <li><strong>User Agent:</strong> ${
+                      clientInfo.userAgent
+                    }</li>
                   </ul>
                   <p>If this wasn't you, please secure your account immediately.</p>
                 `,
-            })
+            });
 
             await prisma.failedLoginAttempt.deleteMany({
-                where: { email },
-              });
+              where: { email },
+            });
           }
-          return null
+          return null;
         }
         return user;
       },
     }),
   ],
-  secret:process.env.JWT_SECRET,
+  secret: process.env.JWT_SECRET,
   session: {
-    strategy: "jwt", 
+    strategy: "jwt",
     maxAge: 60 * 60,
   },
-  callbacks:{
+  callbacks: {
     async signIn({ user, account }) {
-        if (account && (account.provider === "google" || account.provider === "github")) {
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email! },
-          });
-      
-          // Block if user exists but used a different provider
-          if (existingUser && existingUser.provider && existingUser.provider !== account.provider) {
-            throw new Error("Email already exists with a different login method.");
-          }
-      
-          // Automatically verify OAuth users
-          await prisma.user.update({
-            where: { email: user.email! },
-            data: {
-              verified: true,
-              emailVerified: new Date(),
-            },
-          });
+      if (
+        account &&
+        (account.provider === "google" || account.provider === "github")
+      ) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email! },
+        });
+
+        // Block if user exists but used a different provider
+        if (
+          existingUser &&
+          existingUser.provider &&
+          existingUser.provider !== account.provider
+        ) {
+          throw new Error(
+            "Email already exists with a different login method."
+          );
         }
-      
-        return true;
-      },
-      async jwt({ token, user }) {
-        if (user) {
-          token.id = user.id;
-          token.role = user.role;
-        }
-        return token;
-      },
-      async session({ session, token }) {
-        if (session.user && token?.id && token?.role) {
-          session.user.id = token.id as string;
-          session.user.role = token.role as string;
-        }
-        return session;
-      },   
+
+        // Automatically verify OAuth users
+        await prisma.user.update({
+          where: { email: user.email! },
+          data: {
+            verified: true,
+            emailVerified: new Date(),
+          },
+        });
+      }
+
+      return true;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token?.id && token?.role) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+      }
+      return session;
+    },
   },
-  pages:{
-     signIn: "/login", 
-    error: "/error"
+  pages: {
+    signIn: "/login",
+    error: "/error",
   },
-});
+};
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

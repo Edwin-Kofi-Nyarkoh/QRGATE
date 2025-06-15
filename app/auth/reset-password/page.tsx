@@ -42,7 +42,7 @@ export default function ResetPasswordPage() {
         setError(data.error || "Something went wrong.");
       } else {
         setDone(true);
-        setTimeout(() => router.push("/auth/login"), 2000);
+        setTimeout(() => router.push("/auth/signin"), 2000);
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -52,8 +52,8 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex py-5 items-center justify-center md:px-4">
+      <Card className="w-full sm:max-w-sm max-w-auto md:max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
           <CardDescription className="text-center">
