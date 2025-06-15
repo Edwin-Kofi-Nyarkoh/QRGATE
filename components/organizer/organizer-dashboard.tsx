@@ -45,7 +45,7 @@ export function OrganizerDashboard() {
       title: "Total Revenue",
       value: `Ghc${totalRevenue.toFixed(2)}`,
       icon: BadgeCent,
-      color: "text-primary",
+      color: "text-background",
       bgColor: "bg-green-100",
     },
     {
@@ -67,8 +67,8 @@ export function OrganizerDashboard() {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-        <p className="text-gray-600">Track your events and performance</p>
+        <h1 className="text-2xl font-bold ">Dashboard Overview</h1>
+        <p className="">Track your events and performance</p>
       </div>
 
       {/* Stats Grid */}
@@ -76,7 +76,7 @@ export function OrganizerDashboard() {
         {stats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium ">
                 {stat.title}
               </CardTitle>
               <div className={`p-2 rounded-full ${stat.bgColor}`}>
@@ -105,11 +105,11 @@ export function OrganizerDashboard() {
                 >
                   <div>
                     <p className="font-medium">{event.title}</p>
-                    <p className="text-sm text-gray-600">{event.location}</p>
+                    <p className="text-sm ">{event.location}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-medium">Ghc{event.price}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm ">
                       {event.soldTickets}/{event.totalTickets} sold
                     </p>
                   </div>
@@ -132,7 +132,7 @@ export function OrganizerDashboard() {
                 >
                   <div>
                     <p className="font-medium">{order.event.title}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm ">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </p>
                   </div>

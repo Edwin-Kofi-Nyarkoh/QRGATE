@@ -1,4 +1,3 @@
-import { authOptions } from "@/lib/auth";
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 
 export const metadata = {

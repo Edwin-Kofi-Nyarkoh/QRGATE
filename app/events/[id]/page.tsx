@@ -74,7 +74,7 @@ export default async function EventPage({
   });
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="min-h-screen">
       <EventDetails event={event} />
       <RelatedEvents events={relatedEvents} />
     </div>

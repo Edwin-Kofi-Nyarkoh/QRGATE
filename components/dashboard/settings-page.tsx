@@ -85,7 +85,7 @@ export function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Manage your account settings and preferences
         </p>
       </div>
@@ -116,7 +116,7 @@ export function SettingsPage() {
                     <Label htmlFor="email-notifications">
                       Email Notifications
                     </Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Receive notifications via email
                     </p>
                   </div>
@@ -136,7 +136,7 @@ export function SettingsPage() {
                     <Label htmlFor="push-notifications">
                       Push Notifications
                     </Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Receive push notifications in your browser
                     </p>
                   </div>
@@ -154,7 +154,7 @@ export function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="sms-notifications">SMS Notifications</Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Receive important updates via SMS
                     </p>
                   </div>
@@ -174,7 +174,7 @@ export function SettingsPage() {
                     <Label htmlFor="marketing-notifications">
                       Marketing Communications
                     </Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Receive promotional emails and event recommendations
                     </p>
                   </div>
@@ -240,7 +240,7 @@ export function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="profile-visible">Public Profile</Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Make your profile visible to other users
                     </p>
                   </div>
@@ -260,7 +260,7 @@ export function SettingsPage() {
                     <Label htmlFor="show-attendance">
                       Show Event Attendance
                     </Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Let others see which events you're attending
                     </p>
                   </div>
@@ -278,7 +278,7 @@ export function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="allow-messages">Allow Messages</Label>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Allow other users to send you messages
                     </p>
                   </div>
@@ -298,7 +298,7 @@ export function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Analytics Tracking</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Help us improve by sharing anonymous usage data
                       </p>
                     </div>
@@ -307,7 +307,7 @@ export function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Personalized Recommendations</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Get event recommendations based on your interests
                       </p>
                     </div>
@@ -337,7 +337,7 @@ export function SettingsPage() {
                   <h3 className="text-lg font-medium mb-2">
                     No payment methods
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Add a payment method to make purchasing tickets easier
                   </p>
                   <Button>Add Payment Method</Button>
@@ -354,7 +354,9 @@ export function SettingsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
-                  <p className="text-gray-600">No billing history available</p>
+                  <p className="text-muted-foreground">
+                    No billing history available
+                  </p>
                 </div>
               </CardContent>
             </Card>

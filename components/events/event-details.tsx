@@ -129,9 +129,7 @@ export function EventDetails({ event }: EventDetailsProps) {
                   {event._count.tickets} Attendees
                 </Badge>
               </div>
-              <p className="text-gray-700 whitespace-pre-line">
-                {event.description}
-              </p>
+              <p className=" whitespace-pre-line">{event.description}</p>
             </TabsContent>
 
             <TabsContent value="gallery">
@@ -151,7 +149,7 @@ export function EventDetails({ event }: EventDetailsProps) {
                   allowFullScreen
                 ></iframe>
               </div>
-              <p className="mt-4 text-gray-700">{event.location}</p>
+              <p className="mt-4 ">{event.location}</p>
             </TabsContent>
           </Tabs>
         </div>

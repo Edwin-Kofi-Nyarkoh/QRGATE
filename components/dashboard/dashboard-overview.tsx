@@ -13,10 +13,7 @@ import { Calendar, ShoppingBag, TrendingUp, Plus, Ticket } from "lucide-react";
 import Link from "next/link";
 import { useUserTickets, useUserOrders, useCurrentUser } from "@/lib/services";
 import type { Ticket as TicketType } from "@/lib/services";
-
-interface DashboardOverviewProps {
-  user: any;
-}
+import { Skeleton } from "../ui/skeleton";
 
 export function DashboardOverview() {
   const { data: user } = useCurrentUser();
@@ -80,10 +77,10 @@ export function DashboardOverview() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold ">
           Welcome back, {user?.name || "User"}!
         </h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground mt-2">
           Here's what's happening with your tickets and events.
         </p>
       </div>
@@ -123,8 +120,8 @@ export function DashboardOverview() {
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    <Skeleton className="h-4  rounded w-3/4 mb-2"></Skeleton>
+                    <Skeleton className="h-3  rounded w-1/2"></Skeleton>
                   </div>
                 ))}
               </div>
@@ -137,7 +134,7 @@ export function DashboardOverview() {
                   >
                     <div>
                       <p className="font-medium">{ticket.event.title}</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {new Date(ticket.event.startDate).toLocaleDateString()}
                       </p>
                     </div>
@@ -151,7 +148,7 @@ export function DashboardOverview() {
             ) : (
               <div className="text-center py-6">
                 <Ticket className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">No upcoming events</p>
+                <p className="text-muted-foreground mb-4">No upcoming events</p>
                 <Button asChild>
                   <Link href="/events">Browse Events</Link>
                 </Button>
@@ -171,8 +168,8 @@ export function DashboardOverview() {
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    <Skeleton className="h-4  rounded w-3/4 mb-2"></Skeleton>
+                    <Skeleton className="h-3  rounded w-1/2"></Skeleton>
                   </div>
                 ))}
               </div>
@@ -185,7 +182,7 @@ export function DashboardOverview() {
                   >
                     <div>
                       <p className="font-medium">{order.event.title}</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -207,8 +204,8 @@ export function DashboardOverview() {
               </div>
             ) : (
               <div className="text-center py-6">
-                <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">No orders yet</p>
+                <ShoppingBag className="h-12 w-12 text-muted mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">No orders yet</p>
                 <Button asChild>
                   <Link href="/events">Start Shopping</Link>
                 </Button>

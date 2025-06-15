@@ -127,7 +127,9 @@ export function TicketSalesPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Ticket Sales</h1>
-          <p className="text-gray-600">Track your ticket sales performance</p>
+          <p className="text-muted-foreground">
+            Track your ticket sales performance
+          </p>
         </div>
         <Button onClick={handleExportData} variant="outline">
           <Download className="w-4 h-4 mr-2" />

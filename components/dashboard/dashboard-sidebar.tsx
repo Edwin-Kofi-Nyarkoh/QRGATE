@@ -34,7 +34,7 @@ const navigation = [
     name: "My Tickets",
     href: "/dashboard/tickets",
     icon: Ticket,
-    badge: "3",
+    // badge: "3",
   },
   {
     name: "Order History",
@@ -132,11 +132,11 @@ export function DashboardSidebar() {
                 >
                   <item.icon className="mr-3 h-4 w-4" />
                   {item.name}
-                  {item.badge && (
+                  {/* {item.badge && (
                     <Badge variant="secondary" className="ml-auto">
                       {item.badge}
                     </Badge>
-                  )}
+                  )} */}
                 </Button>
               </Link>
             );
