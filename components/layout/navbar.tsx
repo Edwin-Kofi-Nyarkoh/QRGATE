@@ -5,13 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +29,7 @@ import { useCartStore } from "@/lib/store/cart-store";
 import Image from "next/image";
 import { useCurrentUser } from "@/lib/services";
 import { ModeToggle } from "../theme-toggle";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -44,9 +39,15 @@ export function Navbar() {
   });
   const { getTotalItems } = useCartStore();
   const cartCount = getTotalItems();
+  const pathname = usePathname();
+  const isSticky = pathname === "/" || pathname.startsWith("/events");
 
   return (
-    <nav className="bg-background px-4 py-3 dark:bg-background dark:text-foreground">
+    <nav
+      className={`bg-background px-4 py-3 dark:bg-background dark:text-foreground ${
+        isSticky ? "sticky top-0 z-30" : ""
+      }`}
+    >
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-y-2">
         {/* Logo */}
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -209,15 +210,16 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-80 max-w-full p-0">
-              <SheetHeader>
+              {/* <SheetHeader>
                 <SheetTitle>Menu</SheetTitle>
-              </SheetHeader>
+              </SheetHeader> */}
               <UserSidebar />
             </SheetContent>
           </Sheet>
         </div>
-
-        {/* Mobile Navigation */}
+      </div>
+      {/* Mobile Navigation (not sticky, always at bottom of navbar) */}
+      {!isSticky && (
         <div className="flex w-full justify-center gap-8 mt-2 md:hidden order-last">
           <Link
             href="/"
@@ -232,7 +234,7 @@ export function Navbar() {
             DISCOVER EVENTS
           </Link>
         </div>
-      </div>
+      )}
     </nav>
   );
 }
