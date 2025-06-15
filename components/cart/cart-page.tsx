@@ -50,12 +50,12 @@ export function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen py-12">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center">
-            <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-6" />
+            <ShoppingCart className="h-16 w-16 mx-auto mb-6" />
             <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
-            <p className="text-gray-600 mb-8">
+            <p className=" mb-8">
               Looks like you haven't added any tickets to your cart yet.
             </p>
             <Button asChild size="lg">
@@ -68,7 +68,7 @@ export function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen py-12">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
@@ -79,14 +79,14 @@ export function CartPage() {
             </Link>
           </Button>
           <h1 className="text-3xl font-bold">Shopping Cart</h1>
-          <p className="text-gray-600">{totalItems} items in your cart</p>
+          <p>{totalItems} items in your cart</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item, index) => (
-              <Card key={item.id?? `cart-item-${index}`}>
+              <Card key={item.id ?? `cart-item-${index}`}>
                 <CardContent className="p-6">
                   <div className="flex gap-4">
                     <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
@@ -108,7 +108,7 @@ export function CartPage() {
                           <h3 className="font-semibold text-lg mb-2">
                             {item.eventTitle}
                           </h3>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                          <div className="flex items-center gap-4 text-sm  mb-2">
                             <div className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
                               {formatDateTime(item?.eventDate ?? "")}
@@ -169,7 +169,7 @@ export function CartPage() {
                               2
                             )}
                           </p>
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs ">
                             Ghc{(item.price ?? 0).toFixed(2)} each
                           </p>
                         </div>
@@ -244,7 +244,7 @@ export function CartPage() {
             {/* Security Info */}
             <Card>
               <CardContent className="p-4">
-                <div className="text-center text-sm text-gray-600">
+                <div className="text-center text-sm ">
                   <p className="mb-2">🔒 Secure Checkout</p>
                   <p>Your payment information is encrypted and secure</p>
                 </div>
