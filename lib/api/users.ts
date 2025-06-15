@@ -52,6 +52,14 @@ export const useUser = (
   });
 };
 
+// export const useCurrentUserMe = ({ userId }: { userId?: string }) => {
+//   return useQuery({
+//     queryKey: ["userMe"],
+//     queryFn: () => usersApi.getCurrentUser(),
+//     enabled: !!userId,
+//   });
+// };
+
 export const useCurrentUser = (
   options?: Omit<UseQueryOptions<User>, "queryKey" | "queryFn">
 ) => {
