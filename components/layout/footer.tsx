@@ -4,24 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
-  Linkedin,
-  Rss,
+  // Facebook,
+  // Twitter,
+  // Instagram,
+  // Youtube,
+  // Linkedin,
+  // Rss,
+  Github,
 } from "lucide-react";
 import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="bg-slate-800 text-white">
+    <footer className="bg-background dark:bg-secondary">
       {/* Back to Top Button */}
       <div className="flex justify-center py-4">
         <Button
           variant="ghost"
           size="icon"
-          className="bg-orange-500 hover:bg-orange-600 rounded-full"
+          className="bg-background hover:bg-muted-foreground rounded-full"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         >
           ↑
@@ -34,12 +35,12 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">CONTACT.</h3>
             <div className="space-y-2 text-sm text-gray-300">
-              <p>Address: 123 Street, Province, Country</p>
-              <p>Phone: +84. 123 456 78 / 84. 111 222 333</p>
+              <p>Address: Cape Coast, UCC Ghana, Ghana</p>
+              <p>Phone: +233 59 834 6928</p>
               <p>
                 Email:{" "}
-                <Link href="mailto:info@ticketbox.me" className="text-blue-400">
-                  info@ticketbox.me
+                <Link href="mailto:info@qrgates.me" className="text-blue-400">
+                  info@qrgates.me
                 </Link>
               </p>
             </div>
@@ -55,7 +56,7 @@ export function Footer() {
               >
                 About Us
               </Link>
-              <Link
+              {/* <Link
                 href="/delivery"
                 className="block text-gray-300 hover:text-white"
               >
@@ -72,7 +73,7 @@ export function Footer() {
                 className="block text-gray-300 hover:text-white"
               >
                 Terms & Conditions
-              </Link>
+              </Link> */}
             </div>
           </div>
 
@@ -81,26 +82,20 @@ export function Footer() {
             <h3 className="font-semibold mb-4">CUSTOMER.</h3>
             <div className="space-y-2 text-sm">
               <Link
-                href="/account"
-                className="block text-gray-300 hover:text-white"
+                href="/dashboard"
+                className="block text-gray-300 hover:text-white hover:underline"
               >
                 My Account
               </Link>
               <Link
-                href="/order-history"
-                className="block text-gray-300 hover:text-white"
+                href="/dashboard/order-history"
+                className="block text-gray-300 hover:text-white hover:underline"
               >
                 Order History
               </Link>
               <Link
-                href="/create-event"
-                className="block text-gray-300 hover:text-white"
-              >
-                Create event
-              </Link>
-              <Link
                 href="/events"
-                className="block text-gray-300 hover:text-white"
+                className="block text-gray-300 hover:text-white hover:underline"
               >
                 Events list
               </Link>
@@ -108,7 +103,7 @@ export function Footer() {
           </div>
 
           {/* Extra Links */}
-          <div>
+          {/* <div>
             <h3 className="font-semibold mb-4">EXTRA LINKS.</h3>
             <div className="space-y-2 text-sm">
               <Link
@@ -130,10 +125,10 @@ export function Footer() {
                 Affiliates
               </Link>
             </div>
-          </div>
+          </div> */}
 
           {/* Newsletter */}
-          <div>
+          {/* <div>
             <h3 className="font-semibold mb-4">NEWSLETTER.</h3>
             <p className="text-sm text-gray-300 mb-4">
               Get the news updated via email ...
@@ -141,13 +136,11 @@ export function Footer() {
             <div className="space-y-2">
               <Input
                 placeholder="Email address..."
-                className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                className="  placeholder:text-gray-400"
               />
-              <Button className="w-full bg-green-500 hover:bg-primary">
-                Subscribe
-              </Button>
+              <Button className="w-full">Subscribe</Button>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <Separator className="my-8 bg-slate-600" />
@@ -155,25 +148,24 @@ export function Footer() {
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-gray-400 mb-4 md:mb-0">
-            COPYRIGHT 2015 <span className="font-semibold">TICKETBOX</span>.
-            DESIGN BY <span className="font-semibold">BONCHENKI</span> with
+            COPYRIGHT 2025 <span className="font-semibold">QRGate</span>.
+            DEVELOPED BY <span className="font-semibold">QRGATE TEAM</span> with
             PASSION.
           </p>
 
           {/* Social Links */}
           <div className="flex gap-2">
-            {[Facebook, Twitter, Instagram, Youtube, Linkedin, Rss].map(
-              (Icon, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-400 hover:text-white hover:bg-slate-700"
-                >
-                  <Icon className="w-4 h-4" />
-                </Button>
-              )
-            )}
+            {/* {[Facebook, Twitter, Instagram, Youtube, Linkedin, Rss, Github].map( */}
+            {[Github].map((Icon, index) => (
+              <Button
+                key={index}
+                variant="ghost"
+                size="icon"
+                className="text-gray-400 hover:text-white hover:bg-slate-700"
+              >
+                <Icon className="w-4 h-4" />
+              </Button>
+            ))}
           </div>
         </div>
       </div>

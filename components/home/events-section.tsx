@@ -38,10 +38,10 @@ export function EventsSection() {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="animate-pulse space-y-8">
-            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-8 bg-primary rounded w-1/4"></div>
             <div className="grid md:grid-cols-2 gap-8">
               {[1, 2].map((i) => (
-                <div key={i} className="h-64 bg-gray-200 rounded"></div>
+                <div key={i} className="h-64 bg-backrgound rounded"></div>
               ))}
             </div>
           </div>
@@ -57,7 +57,7 @@ export function EventsSection() {
         {ongoingEvents.length > 0 && (
           <div className="mb-16">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-primary flex items-center gap-2">
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
                 Live Events
               </h2>
@@ -78,7 +78,7 @@ export function EventsSection() {
         {upcomingEvents.length > 0 && (
           <div className="mb-16">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-primary flex items-center gap-2">
                 <Calendar className="w-6 h-6" />
                 Upcoming Events
               </h2>
@@ -104,7 +104,7 @@ export function EventsSection() {
         {featuredEvents.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-primary flex items-center gap-2">
                 <Ticket className="w-6 h-6" />
                 Featured Events
               </h2>
@@ -242,7 +242,7 @@ function EventCard({
       </div>
       <CardContent className="p-4">
         <h3 className="font-semibold mb-2 line-clamp-2">{event.title}</h3>
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
+        <div className="flex items-center justify-between text-sm text-primary mb-3">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <Users className="w-4 h-4" />

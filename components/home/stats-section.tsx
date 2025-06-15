@@ -7,9 +7,9 @@ export function StatsSection() {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-r from-green-500 to-primary">
+    <section className="py-16 bg-gradient-to-r from-background to-secondary">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="grid md:grid-cols-4 gap-8 text-center text-white">
+        <div className="grid md:grid-cols-4 gap-8 text-center ">
           {stats.map((stat, index) => (
             <div key={index} className="space-y-2">
               <div className="text-4xl font-bold">{stat.number}</div>

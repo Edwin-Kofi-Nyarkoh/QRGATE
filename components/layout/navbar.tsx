@@ -46,7 +46,7 @@ export function Navbar() {
   const cartCount = getTotalItems();
 
   return (
-    <nav className="bg-slate-800 text-white px-4 py-3 dark:bg-slate-900 dark:text-gray-100">
+    <nav className="bg-background px-4 py-3 dark:bg-background dark:text-foreground">
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-y-2">
         {/* Logo */}
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -73,13 +73,13 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
           <Link
             href="/"
-            className="hover:text-green-400 transition-colors font-medium"
+            className="hover:text-foreground transition-colors font-medium"
           >
             HOME
           </Link>
           <Link
             href="/events"
-            className="hover:text-green-400 transition-colors font-medium"
+            className="hover:text-foreground transition-colors font-medium"
           >
             DISCOVER EVENTS
           </Link>
@@ -93,13 +93,13 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-white hover:text-green-400 relative dark:text-gray-100 dark:hover:text-green-400"
+                className="hover:text-primary relative dark:text-gray-100 dark:hover:text-primary"
                 onClick={() => setIsCartOpen(true)}
               >
                 <ShoppingCart className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">CART</span>
                 {cartCount > 0 && (
-                  <Badge className="ml-2 bg-green-500 text-white dark:bg-green-600">
+                  <Badge className="ml-2 bg-primary text-white dark:bg-secondary">
                     {cartCount}
                   </Badge>
                 )}
@@ -131,7 +131,7 @@ export function Navbar() {
                         src={user?.profileImage || ""}
                         alt={session.user?.name || ""}
                       />
-                      <AvatarFallback className="bg-green-500 text-white dark:bg-green-700">
+                      <AvatarFallback className="bg-primary text-white dark:bg-background">
                         {session.user?.name?.charAt(0) ||
                           session.user?.email?.charAt(0) ||
                           "U"}
@@ -221,13 +221,13 @@ export function Navbar() {
         <div className="flex w-full justify-center gap-8 mt-2 md:hidden order-last">
           <Link
             href="/"
-            className="hover:text-green-400 transition-colors font-medium"
+            className="hover:text-primary transition-colors font-medium"
           >
             HOME
           </Link>
           <Link
             href="/events"
-            className="hover:text-green-400 transition-colors font-medium"
+            className="hover:text-primary transition-colors font-medium"
           >
             DISCOVER EVENTS
           </Link>
