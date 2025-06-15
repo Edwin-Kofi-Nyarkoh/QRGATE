@@ -106,9 +106,9 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
-              <SheetHeader>
+              {/* <SheetHeader>
                 <SheetTitle>Cart</SheetTitle>
-              </SheetHeader>
+              </SheetHeader> */}
               <CartSidebar onClose={() => setIsCartOpen(false)} />
             </SheetContent>
           </Sheet>
