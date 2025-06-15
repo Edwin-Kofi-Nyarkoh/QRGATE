@@ -16,7 +16,7 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="bg-background dark:bg-secondary">
+    <footer className="bg-primary dark:bg-secondary text-card-foreground">
       {/* Back to Top Button */}
       <div className="flex justify-center py-4">
         <Button
@@ -33,7 +33,9 @@ export function Footer() {
         <div className="grid md:grid-cols-5 gap-8">
           {/* Contact */}
           <div>
-            <h3 className="font-semibold mb-4">CONTACT.</h3>
+            <h3 className="font-semibold mb-4 text-white dark:text-card-foreground">
+              CONTACT.
+            </h3>
             <div className="space-y-2 text-sm text-gray-300">
               <p>Address: Cape Coast, UCC Ghana, Ghana</p>
               <p>Phone: +233 59 834 6928</p>
@@ -48,7 +50,9 @@ export function Footer() {
 
           {/* Information */}
           <div>
-            <h3 className="font-semibold mb-4">INFORMATION.</h3>
+            <h3 className="font-semibold mb-4 text-white dark:text-card-foreground">
+              INFORMATION.
+            </h3>
             <div className="space-y-2 text-sm">
               <Link
                 href="/about"
@@ -79,7 +83,9 @@ export function Footer() {
 
           {/* Customer */}
           <div>
-            <h3 className="font-semibold mb-4">CUSTOMER.</h3>
+            <h3 className="font-semibold mb-4 text-white dark:text-card-foreground">
+              CUSTOMER.
+            </h3>
             <div className="space-y-2 text-sm">
               <Link
                 href="/dashboard"

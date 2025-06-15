@@ -28,6 +28,7 @@ import { CartItem, useCartStore } from "@/lib/store/cart-store";
 import { toast } from "sonner";
 import { Event } from "@/lib/services";
 import { TicketTypeSelector } from "@/components/ui/ticket-type-selector";
+import { Skeleton } from "../ui/skeleton";
 
 const categories = [
   "All Categories",
@@ -114,7 +115,7 @@ export function EventsPage() {
           <h1 className="text-2xl font-bold text-red-600 mb-4">
             Error Loading Events
           </h1>
-          <p className="text-gray-600">Please try again later.</p>
+          <p className="">Please try again later.</p>
         </div>
       </div>
     );
@@ -124,10 +125,8 @@ export function EventsPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">All Events</h1>
-        <p className="text-gray-600">
-          Discover amazing events happening around you
-        </p>
+        <h1 className="text-3xl font-bold mb-2">All Events</h1>
+        <p className="">Discover amazing events happening around you</p>
       </div>
 
       {/* Filters */}
@@ -135,7 +134,7 @@ export function EventsPage() {
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2  w-4 h-4" />
               <Input
                 placeholder="Search events..."
                 value={searchTerm}
@@ -173,7 +172,7 @@ export function EventsPage() {
               </SelectContent>
             </Select>
 
-            <Button type="submit" className="bg-green-500 hover:bg-primary">
+            <Button type="submit" className=" hover:bg-primary">
               <Filter className="w-4 h-4 mr-2" />
               Apply Filters
             </Button>
@@ -186,15 +185,15 @@ export function EventsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {Array.from({ length: 12 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <div className="h-48 bg-gray-200 rounded-t-lg" />
+              <Skeleton className="h-48  rounded-t-lg" />
               <CardHeader>
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                <Skeleton className="h-4  rounded w-3/4" />
+                <Skeleton className="h-3  rounded w-1/2" />
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 rounded" />
-                  <div className="h-3 bg-gray-200 rounded w-2/3" />
+                  <Skeleton className="h-3  rounded" />
+                  <Skeleton className="h-3  rounded w-2/3" />
                 </div>
               </CardContent>
             </Card>
@@ -256,21 +255,19 @@ export function EventsPage() {
                     <h3 className="font-semibold text-lg line-clamp-2">
                       {event.title}
                     </h3>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {event.description}
-                    </p>
+                    <p className="text-sm  line-clamp-2">{event.description}</p>
                   </CardHeader>
 
                   <CardContent className="space-y-2">
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm ">
                       <Calendar className="w-4 h-4 mr-2" />
                       {formatDate(event.startDate)}
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm ">
                       <MapPin className="w-4 h-4 mr-2" />
                       {event.location}
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
+                    <div className="flex items-center text-sm ">
                       <Users className="w-4 h-4 mr-2" />
                       {event.totalTickets - event.soldTickets} tickets left
                     </div>
@@ -298,7 +295,7 @@ export function EventsPage() {
                     </Button>
                     <Button
                       onClick={() => handleAddToCart(event)}
-                      className="flex-1 bg-green-500 hover:bg-primary"
+                      className="flex-1"
                       disabled={availableTickets <= 0}
                     >
                       Add to Cart
@@ -329,7 +326,7 @@ export function EventsPage() {
                   variant={currentPage === page ? "default" : "outline"}
                   onClick={() => setCurrentPage(page)}
                   className={
-                    currentPage === page ? "bg-green-500 hover:bg-primary" : ""
+                    currentPage === page ? "bg-background hover:bg-primary" : ""
                   }
                 >
                   {page}
@@ -352,7 +349,7 @@ export function EventsPage() {
 
           {/* Results Info */}
           {eventsData && (
-            <div className="text-center text-gray-600 mt-4">
+            <div className="text-center  mt-4">
               Showing {eventsData?.data?.length} of{" "}
               {eventsData?.pagination?.total} events
             </div>

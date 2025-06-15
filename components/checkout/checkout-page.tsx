@@ -122,7 +122,7 @@ export function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
           <p className="text-gray-600 mb-6">
@@ -180,7 +180,7 @@ export function CheckoutPage() {
                   <div
                     className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 mb-2 ${
                       completed
-                        ? "bg-primary border-primary text-white"
+                        ? "bg-background border-primary"
                         : active
                         ? "bg-primary-light border-primary text-primary"
                         : "bg-background border-border text-muted-foreground"
@@ -261,10 +261,8 @@ export function CheckoutPage() {
                           <p className="font-medium text-sm">
                             {item.ticketType || "Standard"} Ticket
                           </p>
-                          <p className="text-xs text-gray-600">
-                            {item.eventTitle}
-                          </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs ">{item.eventTitle}</p>
+                          <p className="text-xs">
                             {formatDateTime(item?.eventDate ?? "")}
                           </p>
                         </div>
@@ -374,7 +372,7 @@ export function CheckoutPage() {
                           <CreditCard className="w-5 h-5" />
                           <div>
                             <p className="font-medium">Credit/Debit Card</p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm">
                               Pay with Visa, Mastercard, or other cards
                             </p>
                           </div>
@@ -401,7 +399,7 @@ export function CheckoutPage() {
                         <Smartphone className="w-5 h-5" />
                         <div>
                           <p className="font-medium">Mobile Money</p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm ">
                             Pay with MTN, Airtel, Telecel or other mobile money
                           </p>
                         </div>
@@ -416,9 +414,7 @@ export function CheckoutPage() {
                         <Building className="w-5 h-5" />
                         <div>
                           <p className="font-medium">Bank Transfer</p>
-                          <p className="text-sm text-gray-600">
-                            Direct bank transfer
-                          </p>
+                          <p className="text-sm ">Direct bank transfer</p>
                         </div>
                       </div>
                     </Label>
