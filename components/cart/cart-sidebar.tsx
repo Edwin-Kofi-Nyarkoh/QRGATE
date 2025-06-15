@@ -16,7 +16,7 @@ import { formatDateTime } from "@/lib/date-utils";
 import Image from "next/image";
 import Link from "next/link";
 
-export function CartSidebar() {
+export function CartSidebar({ onClose }: { onClose?: () => void }) {
   const {
     items,
     removeItem,
@@ -43,7 +43,9 @@ export function CartSidebar() {
               Add some tickets to get started!
             </p>
             <Button asChild>
-              <Link href="/events">Browse Events</Link>
+              <Link href="/events" onClick={() => onClose?.()}>
+                Browse Events
+              </Link>
             </Button>
           </div>
         </div>
@@ -52,7 +54,7 @@ export function CartSidebar() {
   }
 
   return (
-    <div className="flex flex-col h-full max-h-screen bg-white shadow-lg w-full sm:w-96">
+    <div className="flex flex-col">
       {/* Header */}
       <div className=" border-b sticky top-0 bg-white z-10">
         <div className="flex items-center justify-between">
@@ -62,17 +64,17 @@ export function CartSidebar() {
       </div>
 
       {/* Cart Items */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-4">
-        {items.map((item) => (
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {items.map((item, index) => (
           <div
-            key={item.id}
-            className="border rounded-lg p-3 sm:p-4 bg-white flex flex-col gap-2 sm:gap-0"
+            key={item.id ?? `cart-item-${index}`}
+            className="border rounded-lg p-4"
           >
-            <div className="flex gap-3 flex-col xs:flex-row sm:flex-row">
-              <div className="relative w-full xs:w-16 sm:w-16 h-32 xs:h-16 sm:h-16 rounded-md overflow-hidden flex-shrink-0 mx-auto xs:mx-0 sm:mx-0">
+            <div className="flex gap-3">
+              <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
                 <Image
                   src={item.eventImage || "/placeholder.svg?height=64&width=64"}
-                  alt={item.eventTitle ?? " Event Image"}
+                  alt={item.eventTitle ?? "Event Image"}
                   fill
                   className="object-cover"
                 />
@@ -114,7 +116,7 @@ export function CartSidebar() {
                   size="icon"
                   className="h-6 w-6"
                   onClick={() =>
-                    updateQuantity(item.id, item?.quantity ?? 0 - 1)
+                    updateQuantity(item.id, (item.quantity ?? 1) - 1)
                   }
                   disabled={(item?.quantity ?? 1) <= 1}
                 >
@@ -128,7 +130,7 @@ export function CartSidebar() {
                   size="icon"
                   className="h-6 w-6"
                   onClick={() =>
-                    updateQuantity(item.id, (item?.quantity ?? 0) + 1)
+                    updateQuantity(item.id, (item.quantity ?? 0) + 1)
                   }
                   disabled={
                     (item.quantity ?? 0) >= (item.maxQuantity ?? Infinity)
@@ -171,10 +173,14 @@ export function CartSidebar() {
 
         <div className="space-y-2">
           <Button asChild className="w-full">
-            <Link href="/cart">View Cart</Link>
+            <Link href="/cart" onClick={() => onClose?.()}>
+              View Cart
+            </Link>
           </Button>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/checkout">Checkout</Link>
+            <Link href="/checkout" onClick={() => onClose?.()}>
+              Checkout
+            </Link>
           </Button>
         </div>
       </div>

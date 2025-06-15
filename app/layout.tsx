@@ -25,12 +25,12 @@ export const metadata: Metadata = {
   ],
   authors: [
     {
-      name: "Edwin Nyarkoh",
-      url: "",
+      name: "Edwin Kofi Nyarkoh",
+      url: "https://www.github.com/Edwin-Kofi-Nyarkoh",
     },
     {
       name: "Masood Acheampong",
-      url: "www.github.com/masood-zone",
+      url: "https://www.github.com/masood-zone",
     },
   ],
   generator: "QRGates Dev Team",
@@ -43,9 +43,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+      <body
+        className={`min-h-screen bg-background text-foreground ${inter.className}`}
+        suppressHydrationWarning
+      >
         <Providers>
-          <div className="min-h-screen flex flex-col">
+          <div className="flex flex-col min-h-screen">
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />

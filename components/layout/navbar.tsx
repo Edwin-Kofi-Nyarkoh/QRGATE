@@ -1,9 +1,17 @@
 "use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +37,7 @@ import { useCurrentUser } from "@/lib/services";
 import { ModeToggle } from "../theme-toggle";
 
 export function Navbar() {
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const { data: session } = useSession();
   const { data: user, isLoading: loadingUserSession } = useCurrentUser({
     enabled: !!session,
@@ -79,12 +88,13 @@ export function Navbar() {
         {/* Right Side Actions */}
         <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
           {/* Cart */}
-          <Sheet>
+          <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
                 className="text-white hover:text-green-400 relative dark:text-gray-100 dark:hover:text-green-400"
+                onClick={() => setIsCartOpen(true)}
               >
                 <ShoppingCart className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">CART</span>
@@ -95,20 +105,11 @@ export function Navbar() {
                 )}
               </Button>
             </SheetTrigger>
-            <SheetContent
-              side="right"
-              // className="fixed inset-0 z-50 w-full max-w-md p-0 bg-white dark:bg-slate-900 transition-transform duration-300 md:relative md:inset-auto md:w-full md:max-w-md md:rounded-none md:shadow-none"
-              // style={{
-              //   top: 0,
-              //   left: "auto",
-              //   right: 0,
-              //   height: "100vh",
-              //   maxHeight: "100vh",
-              //   borderRadius: 0,
-              //   boxShadow: "none",
-              // }}
-            >
-              <CartSidebar />
+            <SheetContent side="right">
+              <SheetHeader>
+                <SheetTitle>Cart</SheetTitle>
+              </SheetHeader>
+              <CartSidebar onClose={() => setIsCartOpen(false)} />
             </SheetContent>
           </Sheet>
 
@@ -194,10 +195,11 @@ export function Navbar() {
               >
                 <Link href="/auth/signin">JOIN US NOW</Link>
               </Button>
-
-              <ModeToggle />
             </>
           )}
+
+          {/* Move ModeToggle outside the session conditional so it shows always */}
+          <ModeToggle />
 
           {/* Mobile Menu & User Sidebar */}
           <Sheet>
@@ -207,6 +209,9 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-80 max-w-full p-0">
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
               <UserSidebar />
             </SheetContent>
           </Sheet>
