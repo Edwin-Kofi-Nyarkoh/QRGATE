@@ -126,19 +126,6 @@ export function EventListPage() {
     }
   };
 
-  if (isLoading) return <PageLoader />;
-
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-semibold text-destructive mb-2">
-          Error Loading Events
-        </h2>
-        <p className="text-muted-foreground">Please try again later.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 md:p-5">
       {/* Header */}
@@ -207,9 +194,20 @@ export function EventListPage() {
           </form>
         </CardContent>
       </Card>
-
-      {/* Events List */}
-      {eventsData?.events?.length === 0 ? (
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <PageLoader />
+        </div>
+      ) : // Error State
+      error ? (
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-semibold text-destructive mb-2">
+            Error Loading Events
+          </h2>
+          <p className="text-muted-foreground">Please try again later.</p>
+        </div>
+      ) : eventsData?.events?.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
             <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
