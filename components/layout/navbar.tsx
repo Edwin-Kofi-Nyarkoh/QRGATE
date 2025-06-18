@@ -32,7 +32,10 @@ import { ModeToggle } from "../theme-toggle";
 import { usePathname } from "next/navigation";
 
 export function Navbar() {
+  // State for managing cart and user sidebar visibility
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isUserSidebarOpen, setIsUserSidebarOpen] = useState(false);
+  // Get session and user data
   const { data: session } = useSession();
   const { data: user, isLoading: loadingUserSession } = useCurrentUser({
     enabled: !!session,
@@ -203,7 +206,7 @@ export function Navbar() {
           <ModeToggle />
 
           {/* Mobile Menu & User Sidebar */}
-          <Sheet>
+          <Sheet open={isUserSidebarOpen} onOpenChange={setIsUserSidebarOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="sm" className="md:hidden">
                 <Menu className="w-5 h-5" />
@@ -213,7 +216,7 @@ export function Navbar() {
               {/* <SheetHeader>
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader> */}
-              <UserSidebar />
+              <UserSidebar onClose={() => setIsUserSidebarOpen(false)} />
             </SheetContent>
           </Sheet>
         </div>

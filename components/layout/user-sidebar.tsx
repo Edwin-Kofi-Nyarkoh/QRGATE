@@ -20,7 +20,7 @@ import { useSession } from "next-auth/react";
 import { useCurrentUser } from "@/lib/api/users";
 import { useCartStore } from "@/lib/store/cart-store";
 
-export function UserSidebar() {
+export function UserSidebar({ onClose }: { onClose: () => void }) {
   const { data: session } = useSession();
   const { data: user, isLoading: loadingUserSession } = useCurrentUser({
     enabled: !!session,
@@ -72,6 +72,7 @@ export function UserSidebar() {
         <div className="space-y-2">
           <Link
             href="/dashboard/profile"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <User className="w-4 h-4" />
@@ -79,13 +80,15 @@ export function UserSidebar() {
           </Link>
           <Link
             href="/dashboard/order-history"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <History className="w-4 h-4" />
             <span className="text-sm">Order History</span>
           </Link>
           <Link
-            href="/dashboard/my-tickets"
+            href="/dashboard/tickets"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <Ticket className="w-4 h-4" />
@@ -93,6 +96,7 @@ export function UserSidebar() {
           </Link>
           <Link
             href="/dashboard/settings"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <Settings className="w-4 h-4" />
@@ -118,6 +122,7 @@ export function UserSidebar() {
         <div className="space-y-2">
           <Link
             href="/"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <User className="w-4 h-4" />
@@ -125,6 +130,7 @@ export function UserSidebar() {
           </Link>
           <Link
             href="/events"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <History className="w-4 h-4" />
