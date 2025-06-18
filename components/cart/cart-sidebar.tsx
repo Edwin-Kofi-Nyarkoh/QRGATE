@@ -52,16 +52,16 @@ export function CartSidebar({ onClose }: { onClose?: () => void }) {
   }
 
   return (
-    <div className="flex flex-col h-full max-h-screen shadow-lg w-full sm:w-96">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b flex items-center gap-2 sticky top-0 z-10 bg-background">
+      <div className="p-4 flex items-center gap-2 sticky top-0 z-10 bg-background">
         <ShoppingCart className="h-6 w-6 text-primary" />
         <h2 className="text-lg font-semibold flex-1">Shopping Cart</h2>
         <Badge variant="secondary">{totalItems} items</Badge>
       </div>
 
       {/* Cart Items */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto space-y-4 py-4">
         {items.map((item, index) => (
           <div
             key={item.id ?? `cart-item-${index}`}
@@ -148,7 +148,7 @@ export function CartSidebar({ onClose }: { onClose?: () => void }) {
       </div>
 
       {/* Footer */}
-      <div className="border-t p-4 space-y-4 sticky bottom-0 z-10 bg-background">
+      <div className="border-t space-y-4 sticky bottom-0 z-10 bg-background">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           <Button
             variant="outline"
