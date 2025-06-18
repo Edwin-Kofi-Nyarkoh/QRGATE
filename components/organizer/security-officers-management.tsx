@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +40,6 @@ import {
   UserCheck,
   ExternalLink,
 } from "lucide-react";
-import { toast } from "sonner";
 
 interface SecurityOfficer {
   id: string;
@@ -72,6 +72,8 @@ export function SecurityOfficersManagement({
     phone: "",
   });
 
+  const { toast } = useToast();
+
   const fetchOfficers = async () => {
     setIsLoading(true);
     try {
@@ -82,8 +84,10 @@ export function SecurityOfficersManagement({
       }
     } catch (error) {
       console.error("Error fetching officers:", error);
-      toast("Error", {
+      toast({
+        title: "Error",
         description: "Failed to load security officers.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -92,8 +96,10 @@ export function SecurityOfficersManagement({
 
   const handleCreateOfficer = async () => {
     if (!newOfficer.name || !newOfficer.email) {
-      toast("Validation Error", {
+      toast({
+        title: "Validation Error",
         description: "Name and email are required.",
+        variant: "destructive",
       });
       return;
     }
@@ -113,19 +119,24 @@ export function SecurityOfficersManagement({
         setOfficers([...officers, data.officer]);
         setNewOfficer({ name: "", email: "", phone: "" });
         setIsCreateDialogOpen(false);
-        toast("Success", {
+        toast({
+          title: "Success",
           description: "Security officer created successfully.",
         });
       } else {
         const error = await response.json();
-        toast("Error", {
+        toast({
+          title: "Error",
           description: error.message || "Failed to create security officer.",
+          variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error creating officer:", error);
-      toast("Error", {
+      toast({
+        title: "Error",
         description: "Failed to create security officer.",
+        variant: "destructive",
       });
     }
   };
@@ -147,7 +158,8 @@ export function SecurityOfficersManagement({
             officer.id === officerId ? { ...officer, active: !active } : officer
           )
         );
-        toast("Success", {
+        toast({
+          title: "Success",
           description: `Security officer ${
             !active ? "activated" : "deactivated"
           }.`,
@@ -155,54 +167,25 @@ export function SecurityOfficersManagement({
       }
     } catch (error) {
       console.error("Error toggling officer status:", error);
-      toast("Error", { description: "Failed to update officer status." });
+      toast({
+        title: "Error",
+        description: "Failed to update officer status.",
+        variant: "destructive",
+      });
     }
   };
 
   const copySecurityLink = (officerId: string) => {
-    const link = `${window.location.origin}/security/${eventId}`;
-    if (
-      navigator &&
-      navigator.clipboard &&
-      typeof navigator.clipboard.writeText === "function"
-    ) {
-      navigator.clipboard
-        .writeText(link)
-        .then(() => {
-          toast("Link Copied", {
-            description: "Security verification link copied to clipboard.",
-          });
-        })
-        .catch(() => {
-          fallbackCopyTextToClipboard(link);
-        });
-    } else {
-      fallbackCopyTextToClipboard(link);
-    }
+    const link = `${window.location.origin}/security/${eventId}/${officerId}`;
+    navigator.clipboard.writeText(link);
+    toast({
+      title: "Link Copied",
+      description: "Security verification link copied to clipboard.",
+    });
   };
 
-  // Fallback for older browsers
-  function fallbackCopyTextToClipboard(text: string) {
-    try {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      toast("Link Copied", {
-        description: "Security verification link copied to clipboard.",
-      });
-    } catch (err) {
-      toast("Error", {
-        description: "Failed to copy link. Please copy manually.",
-      });
-    }
-  }
-
-  const openSecurityLink = () => {
-    const link = `${window.location.origin}/security/${eventId}`;
+  const openSecurityLink = (officerId: string) => {
+    const link = `${window.location.origin}/security/${eventId}/${officerId}`;
     window.open(link, "_blank");
   };
 
@@ -221,19 +204,43 @@ export function SecurityOfficersManagement({
                 <Shield className="w-5 h-5" />
                 Security Officers
               </CardTitle>
-              <p className="text-sm text-muted-foregroundmt-1">
+              <p className="text-sm text-gray-600 mt-1">
                 Manage security officers for {eventTitle}
               </p>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={openSecurityLink}
-                className="flex items-center gap-2"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Open Security Portal
-              </Button>
+              {officers.length > 0 ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Open Security Portal
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {officers.map((officer) => (
+                      <DropdownMenuItem
+                        key={officer.id}
+                        onClick={() => openSecurityLink(officer.id)}
+                      >
+                        {officer.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  variant="outline"
+                  disabled
+                  className="flex items-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  No Officers Yet
+                </Button>
+              )}
               <Dialog
                 open={isCreateDialogOpen}
                 onOpenChange={setIsCreateDialogOpen}
@@ -418,35 +425,56 @@ export function SecurityOfficersManagement({
       {/* Security Link Information */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
-            Security Verification Portal
-          </CardTitle>
+          <CardTitle className="text-lg">Security Verification Links</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800 mb-2">
-                <strong>Security Portal Link:</strong>
-              </p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 p-2 bg-white rounded text-sm">
-                  {`${
-                    typeof window !== "undefined" ? window.location.origin : ""
-                  }/security/${eventId}`}
-                </code>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => copySecurityLink("")}
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
+            {officers.length === 0 ? (
+              <div className="p-4  rounded-lg text-center">
+                <p className="text-sm text-gray-600">
+                  Create security officers to generate verification links.
+                </p>
               </div>
-            </div>
-            <div className="text-sm text-muted-foreground">
+            ) : (
+              <div className="space-y-3">
+                {officers.map((officer) => (
+                  <div
+                    key={officer.id}
+                    className="p-4 bg-background rounded-lg"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium text-blue-800">
+                        {officer.name} - Security Portal
+                      </p>
+                      <Badge variant={officer.active ? "default" : "secondary"}>
+                        {officer.active ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 p-2  rounded text-xs break-all">
+                        {`${
+                          typeof window !== "undefined"
+                            ? window.location.origin
+                            : ""
+                        }/security/${eventId}/${officer.id}`}
+                      </code>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copySecurityLink(officer.id)}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="text-sm text-gray-600">
               <p>
-                Share this link with your security officers to access the ticket
-                verification portal for this event.
+                Share these individual links with your security officers to
+                access the ticket verification portal for this event. Each
+                officer has their own unique access link.
               </p>
             </div>
           </div>
