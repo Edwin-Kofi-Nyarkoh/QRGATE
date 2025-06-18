@@ -79,7 +79,7 @@ export function UserSidebar({ onClose }: { onClose: () => void }) {
             <span className="text-sm">Profile</span>
           </Link>
           <Link
-            href="/dashboard/order-history"
+            href="/dashboard/orders"
             onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
