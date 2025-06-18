@@ -104,7 +104,7 @@ export function UserSidebar() {
       {/* Cart Summary */}
       <div className="p-4  border-b">
         <div className="bg-primary p-3 rounded">
-          <p className="text-sm font-medium text-blue-800">
+          <p className="text-sm font-medium text-white ">
             {cartItemCount > 0
               ? `${cartItemCount} Items - Total Ghc${cartTotal.toFixed(2)}`
               : "Cart is empty"}
@@ -128,7 +128,7 @@ export function UserSidebar() {
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <History className="w-4 h-4" />
-            <span className="text-sm">Discovery Events</span>
+            <span className="text-sm">Discover Events</span>
           </Link>
         </div>
       </div>
