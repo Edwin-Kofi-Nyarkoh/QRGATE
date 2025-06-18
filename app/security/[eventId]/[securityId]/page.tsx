@@ -92,9 +92,10 @@ function UnauthorizedAccess() {
   );
 }
 
-export default async function SecurityVerificationPage({
-  params,
-}: SecurityVerificationPageProps) {
+export default async function SecurityVerificationPage(
+  props: SecurityVerificationPageProps
+) {
+  const params = await props.params;
   const { eventId, securityId } = params;
 
   // Validate that both parameters exist
@@ -136,29 +137,27 @@ export default async function SecurityVerificationPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header with event and officer info */}
-      <div className="bg-white border-b">
+      <div className=" border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center">
                 <Shield className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
+                <h1 className="text-xl font-semibold ">
                   Security Verification
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   {securityData.event.title}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">
-                {securityData.name}
-              </p>
-              <p className="text-xs text-gray-500">Security Officer</p>
+              <p className="text-sm font-medium ">{securityData.name}</p>
+              <p className="text-xs text-muted-foreground">Security Officer</p>
             </div>
           </div>
         </div>

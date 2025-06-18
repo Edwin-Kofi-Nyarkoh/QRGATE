@@ -172,8 +172,8 @@ export function ScanTicket({
     setIsVerifying(true);
     try {
       const endpoint = securityId
-        ? "/api/security/verify-ticket"
-        : "/api/tickets/verify";
+        ? "/api/tickets/verify"
+        : "/api/security/verify-ticket";
       const requestBody = {
         eventId,
         ...(securityId && { securityId }),
@@ -498,7 +498,7 @@ export function ScanTicket({
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Ticket Holder Info */}
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-4 p-4 rounded-lg">
               <Avatar className="w-16 h-16">
                 <AvatarImage
                   src={ticketData.user.profileImage || "/placeholder.svg"}
@@ -512,7 +512,7 @@ export function ScanTicket({
                 <h3 className="text-xl font-semibold">
                   {ticketData.user.name || "Unknown User"}
                 </h3>
-                <div className="space-y-1 text-sm text-gray-600">
+                <div className="space-y-1 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4" />
                     {ticketData.user.email}
@@ -533,25 +533,19 @@ export function ScanTicket({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-3">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Ticket Type
-                  </Label>
+                  <Label className="text-sm font-medium ">Ticket Type</Label>
                   <p className="text-lg font-semibold">
                     {ticketData.ticketType?.name || ticketData.type}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Price
-                  </Label>
+                  <Label className="text-sm font-medium ">Price</Label>
                   <p className="text-lg font-semibold">
                     GHC {ticketData.ticketType?.price || ticketData.price}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Purchase Date
-                  </Label>
+                  <Label className="text-sm font-medium ">Purchase Date</Label>
                   <p className="text-sm">
                     {new Date(ticketData.order.createdAt).toLocaleDateString()}
                   </p>
@@ -560,24 +554,18 @@ export function ScanTicket({
 
               <div className="space-y-3">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Event
-                  </Label>
+                  <Label className="text-sm font-medium ">Event</Label>
                   <p className="font-semibold">{ticketData.event.title}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Event Date
-                  </Label>
+                  <Label className="text-sm font-medium ">Event Date</Label>
                   <div className="flex items-center gap-1 text-sm">
                     <Calendar className="w-4 h-4" />
                     {new Date(ticketData.event.startDate).toLocaleDateString()}
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Location
-                  </Label>
+                  <Label className="text-sm font-medium ">Location</Label>
                   <div className="flex items-center gap-1 text-sm">
                     <MapPin className="w-4 h-4" />
                     {ticketData.event.location}
@@ -661,7 +649,7 @@ export function ScanTicket({
                     <p className="font-medium">
                       {item.ticket.user.name || "Unknown User"}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       {item.ticket.type} - GHC {item.ticket.price}
                     </p>
                   </div>
@@ -673,7 +661,7 @@ export function ScanTicket({
                     >
                       {item.action === "marked_used" ? "Used" : "Verified"}
                     </Badge>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       {item.timestamp.toLocaleTimeString()}
                     </p>
                   </div>
@@ -693,7 +681,7 @@ export function ScanTicket({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
             <div>
               <h4 className="font-semibold mb-2">Scanning Tickets:</h4>
-              <ul className="space-y-1 text-gray-600">
+              <ul className="space-y-1 text-muted-foreground">
                 <li>• Use the camera to scan QR codes on tickets</li>
                 <li>• Ensure good lighting for better scanning</li>
                 <li>• Hold the device steady when scanning</li>
@@ -702,7 +690,7 @@ export function ScanTicket({
             </div>
             <div>
               <h4 className="font-semibold mb-2">Manual Search:</h4>
-              <ul className="space-y-1 text-gray-600">
+              <ul className="space-y-1 text-muted-foreground">
                 <li>• Search by ticket holder's name, email, or phone</li>
                 <li>• Use exact spelling for name searches</li>
                 <li>• Include country code for phone searches</li>
