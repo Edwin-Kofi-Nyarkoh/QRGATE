@@ -230,6 +230,36 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+model About {
+  id              String        @id @default(uuid())
+  mission         String
+  vision          String
+  story           String
+  founded         Int
+  location        String
+  teamSize        Int
+  eventsHosted    Int
+  happyCustomers  Int
+  values          String?       
+  contactEmail    String
+  contactPhone    String
+  contactWebsite  String
+  teamMembers     TeamMember[]  @relation("AboutTeam")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  name      String
+  role      String
+  image     String   
+  bio       String
+  order     Int
+  about     About    @relation("AboutTeam", fields: [aboutId], references: [id])
+  aboutId   String
+}
+
 enum Role {
   USER
   ADMIN
