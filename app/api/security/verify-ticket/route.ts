@@ -19,12 +19,28 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { qrCode, name, phone, email, eventId } = body;
+    const { qrCode, name, phone, email, eventId, securityId } = body;
 
-    if (!eventId) {
+    if (!eventId || !securityId) {
       return NextResponse.json(
-        { message: "Event ID is required" },
+        { message: "Event ID and Security ID are required" },
         { status: 400 }
+      );
+    }
+
+    // Verify security officer is assigned to this event
+    const securityOfficer = await prisma.securityOfficer.findFirst({
+      where: {
+        id: securityId,
+        eventId: eventId,
+        active: true,
+      },
+    });
+
+    if (!securityOfficer) {
+      return NextResponse.json(
+        { message: "Security officer not authorized for this event" },
+        { status: 403 }
       );
     }
 
@@ -161,7 +177,6 @@ export async function POST(request: NextRequest) {
               title: true,
               startDate: true,
               location: true,
-              organizerId: true,
             },
           },
           order: {
@@ -208,7 +223,6 @@ export async function POST(request: NextRequest) {
               title: true,
               startDate: true,
               location: true,
-              organizerId: true,
             },
           },
           order: {
@@ -255,7 +269,6 @@ export async function POST(request: NextRequest) {
               title: true,
               startDate: true,
               location: true,
-              organizerId: true,
             },
           },
           order: {
@@ -281,8 +294,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!ticket) {
-      console.log("Ticket not found for event:", eventId, qrCode);
-
       return NextResponse.json(
         {
           valid: false,
@@ -305,20 +316,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify user has permission to access this event (for organizers)
-    const isOrganizer = ticket.event.organizerId;
+    // Log the verification
+    await prisma.verificationLog.create({
+      data: {
+        ticketId: ticket.id,
+        securityOfficerId: securityId,
+        eventId: eventId,
+        action: "VERIFIED",
+        details: `Ticket verified by ${
+          session.user.name || session.user.email
+        }`,
+      },
+    });
 
-    if (!isOrganizer) {
-      return NextResponse.json(
-        { message: "Insufficient permissions" },
-        { status: 403 }
-      );
-    }
+    // Get verification stats for this security officer
+    const stats = await prisma.verificationLog.aggregate({
+      where: {
+        securityOfficerId: securityId,
+        eventId: eventId,
+        createdAt: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)), // Today
+        },
+      },
+      _count: {
+        id: true,
+      },
+    });
 
     return NextResponse.json({
       valid: true,
       message: "Valid ticket found",
       ticket: ticket,
+      stats: {
+        totalVerified: stats._count.id,
+        recentActivity: stats._count.id,
+      },
     });
   } catch (error) {
     console.error("Error verifying ticket:", error);

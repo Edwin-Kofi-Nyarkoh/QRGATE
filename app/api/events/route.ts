@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const status = searchParams.get("status");
+    const search = searchParams.get("search")?.toLowerCase() || "";
     const limit = Number.parseInt(searchParams.get("limit") || "10");
     const page = Number.parseInt(searchParams.get("page") || "1");
     const organizerId = searchParams.get("organizerId");
@@ -29,6 +30,15 @@ export async function GET(request: NextRequest) {
       // Only filter by status if provided
       where.status = status;
     }
+
+    // If search term is provided, filter by title or description
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
     // If neither status nor dateFilter is provided, return all events (optionally, you can default to upcoming if you want)
 
     const events = await prisma.event.findMany({

@@ -103,6 +103,7 @@ model Event {
   images        EventImage[]
   ticketTypes   TicketType[]
   securityOfficers SecurityOfficer[]
+  verificationLogs VerificationLog[]
 
   @@map("events")
 }
@@ -154,6 +155,7 @@ model Ticket {
   orderId       String
   ticketType    TicketType? @relation(fields: [ticketTypeId], references: [id])
   ticketTypeId  String?
+  verificationLogs VerificationLog[]
 
   @@map("tickets")
 }
@@ -192,8 +194,30 @@ model SecurityOfficer {
   userId    String
   event     Event    @relation(fields: [eventId], references: [id])
   eventId   String
+  verificationLogs VerificationLog[]
 
   @@map("security_officers")
+}
+
+model VerificationLog {
+  id                String          @id @default(cuid())
+  ticketId          String
+  securityOfficerId String
+  eventId           String
+  details            String?         // Additional details about the verification
+  action            String          // VERIFIED, MARKED_USED
+  timestamp         DateTime        @default(now())
+  createdAt         DateTime        @default(now())
+
+  // Relations
+  ticket            Ticket          @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  securityOfficer   SecurityOfficer @relation(fields: [securityOfficerId], references: [id], onDelete: Cascade)
+  event             Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([securityOfficerId])
+  @@index([timestamp])
+  @@map("verification_logs")
 }
 
 model PasswordResetToken {
@@ -204,6 +228,36 @@ model PasswordResetToken {
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("password_reset_tokens")
+}
+
+model About {
+  id              String        @id @default(uuid())
+  mission         String
+  vision          String
+  story           String
+  founded         Int
+  location        String
+  teamSize        Int
+  eventsHosted    Int
+  happyCustomers  Int
+  values          String?       
+  contactEmail    String
+  contactPhone    String
+  contactWebsite  String
+  teamMembers     TeamMember[]  @relation("AboutTeam")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  name      String
+  role      String
+  image     String   
+  bio       String
+  order     Int
+  about     About    @relation("AboutTeam", fields: [aboutId], references: [id])
+  aboutId   String
 }
 
 enum Role {

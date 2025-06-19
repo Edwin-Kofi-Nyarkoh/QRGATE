@@ -20,7 +20,7 @@ import { useSession } from "next-auth/react";
 import { useCurrentUser } from "@/lib/api/users";
 import { useCartStore } from "@/lib/store/cart-store";
 
-export function UserSidebar() {
+export function UserSidebar({ onClose }: { onClose: () => void }) {
   const { data: session } = useSession();
   const { data: user, isLoading: loadingUserSession } = useCurrentUser({
     enabled: !!session,
@@ -72,20 +72,23 @@ export function UserSidebar() {
         <div className="space-y-2">
           <Link
             href="/dashboard/profile"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <User className="w-4 h-4" />
             <span className="text-sm">Profile</span>
           </Link>
           <Link
-            href="/dashboard/order-history"
+            href="/dashboard/orders"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <History className="w-4 h-4" />
             <span className="text-sm">Order History</span>
           </Link>
           <Link
-            href="/dashboard/my-tickets"
+            href="/dashboard/tickets"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <Ticket className="w-4 h-4" />
@@ -93,6 +96,7 @@ export function UserSidebar() {
           </Link>
           <Link
             href="/dashboard/settings"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <Settings className="w-4 h-4" />
@@ -104,7 +108,7 @@ export function UserSidebar() {
       {/* Cart Summary */}
       <div className="p-4  border-b">
         <div className="bg-primary p-3 rounded">
-          <p className="text-sm font-medium text-blue-800">
+          <p className="text-sm font-medium text-white ">
             {cartItemCount > 0
               ? `${cartItemCount} Items - Total Ghc${cartTotal.toFixed(2)}`
               : "Cart is empty"}
@@ -118,6 +122,7 @@ export function UserSidebar() {
         <div className="space-y-2">
           <Link
             href="/"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <User className="w-4 h-4" />
@@ -125,10 +130,11 @@ export function UserSidebar() {
           </Link>
           <Link
             href="/events"
+            onClick={onClose}
             className="flex items-center gap-3 p-2 rounded  transition-colors hover:bg-gray-300 dark:hover:bg-gray-700"
           >
             <History className="w-4 h-4" />
-            <span className="text-sm">Discovery Events</span>
+            <span className="text-sm">Discover Events</span>
           </Link>
         </div>
       </div>

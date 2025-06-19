@@ -172,7 +172,7 @@ export function TicketsPage() {
       </div>
 
       {/* Search and Filter */}
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
@@ -182,22 +182,22 @@ export function TicketsPage() {
             className="pl-10"
           />
         </div>
-        <Button variant="outline">
+        <Button variant="outline" className="w-full sm:w-auto">
           <Filter className="mr-2 h-4 w-4" />
           Filter
         </Button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-4 items-center mb-4">
+      {/* Responsive Filters */}
+      <div className="flex flex-wrap gap-2 sm:gap-4 items-center mb-4 overflow-x-auto pb-2">
         <Input
           placeholder="Search by name, email, or QR code"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-64"
+          className="w-full sm:w-64"
         />
         <Select value={eventFilter} onValueChange={setEventFilter}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue placeholder="All Events" />
           </SelectTrigger>
           <SelectContent>
@@ -210,7 +210,7 @@ export function TicketsPage() {
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
@@ -223,7 +223,7 @@ export function TicketsPage() {
           </SelectContent>
         </Select>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="All Types" />
           </SelectTrigger>
           <SelectContent>
@@ -238,7 +238,7 @@ export function TicketsPage() {
       </div>
 
       <Tabs defaultValue="upcoming" className="space-y-6">
-        <TabsList>
+        <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="upcoming">
             Upcoming ({upcomingTickets?.length})
           </TabsTrigger>
@@ -305,6 +305,7 @@ export function TicketsPage() {
   );
 }
 
+// --- Responsive TicketCard ---
 interface TicketCardProps {
   ticket: any;
   onDownload: (ticketId: string) => void;
@@ -320,9 +321,9 @@ function TicketCard({
 }: TicketCardProps) {
   return (
     <Card className={isPast ? "opacity-75" : ""}>
-      <CardContent className="p-6">
-        <div className="flex gap-4">
-          <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative w-full sm:w-24 h-40 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 mx-auto sm:mx-0">
             <Image
               src={
                 ticket?.event?.mainImage ||
@@ -334,13 +335,13 @@ function TicketCard({
             />
           </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0 flex flex-col justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
               <div>
-                <h3 className="font-semibold text-lg mb-1">
+                <h3 className="font-semibold text-lg mb-1 line-clamp-2">
                   {ticket?.event?.title}
                 </h3>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mb-2">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     {ticket?.event?.startDate &&
@@ -351,7 +352,7 @@ function TicketCard({
                     {ticket?.event?.location}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={ticket?.isUsed ? "secondary" : "default"}>
                     {ticket?.type}
                   </Badge>
@@ -367,7 +368,7 @@ function TicketCard({
                 </div>
               </div>
 
-              <div className="text-right">
+              <div className="text-right sm:text-right mt-2 sm:mt-0">
                 <p className="font-semibold text-lg">
                   Ghc{ticket?.price?.toFixed(2)}
                 </p>
@@ -378,11 +379,12 @@ function TicketCard({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-row sm:flex-col gap-2 mt-2 sm:mt-0">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onDownload(ticket?.id)}
+              className="w-full sm:w-auto"
             >
               <Download className="h-4 w-4 mr-2" />
               Download
@@ -392,6 +394,7 @@ function TicketCard({
               size="sm"
               onClick={() => onShowQRCode(ticket)}
               disabled={!ticket?.qrCode}
+              className="w-full sm:w-auto"
             >
               <QrCode className="h-4 w-4 mr-2" />
               QR Code

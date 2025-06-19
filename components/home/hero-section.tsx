@@ -17,7 +17,7 @@ const slides = [
     sub: "Find concerts, workshops, meetups, and more near you.",
   },
   {
-    image: "/hero-bg-3.jpg",
+    image: "/hero-bg-4.jpg",
     headline: "Secure & Fast Checkout",
     sub: "Enjoy seamless and secure ticketing with QRGates.",
   },

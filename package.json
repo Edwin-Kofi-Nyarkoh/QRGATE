@@ -22,6 +22,9 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "prisma": {
+  "seed": "ts-node prisma/seed.ts"
+},
   "dependencies": {
     "@auth/core": "latest",
     "@auth/prisma-adapter": "latest",

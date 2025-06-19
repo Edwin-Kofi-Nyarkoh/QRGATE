@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TicketTypeSelector } from "@/components/ui/ticket-type-selector";
+import { EventsPageSkeleton } from "../events/events-page-skeleton";
 
 export function EventsSection() {
   const { data: upcomingEvents = [], isLoading: upcomingLoading } =
@@ -34,20 +35,7 @@ export function EventsSection() {
     useOngoingEvents();
 
   if (upcomingLoading || featuredLoading || ongoingLoading) {
-    return (
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="animate-pulse space-y-8">
-            <div className="h-8 bg-primary rounded w-1/4"></div>
-            <div className="grid md:grid-cols-2 gap-8">
-              {[1, 2].map((i) => (
-                <div key={i} className="h-64 bg-backrgound rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-    );
+    return <EventsPageSkeleton />;
   }
 
   return (

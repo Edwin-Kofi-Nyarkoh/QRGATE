@@ -173,9 +173,9 @@ function OrderCard({ order }: OrderCardProps) {
 
   return (
     <Card>
-      <CardContent className="p-6">
-        <div className="flex gap-4">
-          <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative w-full sm:w-20 h-32 sm:h-20 rounded-lg overflow-hidden flex-shrink-0">
             <Image
               src={
                 order.event.mainImage || "/placeholder.svg?height=80&width=80"
@@ -186,53 +186,58 @@ function OrderCard({ order }: OrderCardProps) {
             />
           </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0 flex flex-col justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
               <div>
-                <h3 className="font-semibold text-lg mb-1">
+                <h3 className="font-semibold text-base sm:text-lg mb-1">
                   {order.event.title}
                 </h3>
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-2">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     {formatDateTime(order.event.startDate)}
                   </div>
+                  <span className="hidden sm:inline">|</span>
                   <span>Order #{order.id.slice(-8)}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant={getStatusColor(order.status)}>
                     {order.status}
                   </Badge>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-xs sm:text-sm text-muted-foreground">
                     {order.tickets.length} ticket
                     {order.tickets.length !== 1 ? "s" : ""}
                   </span>
                 </div>
               </div>
 
-              <div className="text-right">
-                <p className="font-semibold text-lg">
+              <div className="text-right min-w-[90px]">
+                <p className="font-semibold text-base sm:text-lg">
                   Ghc{order.total.toFixed(2)}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {new Date(order.createdAt).toLocaleDateString()}
                 </p>
               </div>
             </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Receipt
-            </Button>
-            {order.status === "COMPLETED" && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={`/dashboard/tickets?order=${order.id}`}>
-                  View Tickets
-                </a>
+            <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0 sm:justify-end">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                <Download className="h-4 w-4 mr-2" />
+                Receipt
               </Button>
-            )}
+              {order.status === "COMPLETED" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="w-full sm:w-auto"
+                >
+                  <a href={`/dashboard/tickets?order=${order.id}`}>
+                    View Tickets
+                  </a>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>

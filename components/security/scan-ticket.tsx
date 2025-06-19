@@ -23,6 +23,7 @@ import {
   Ticket,
   Camera,
   CameraOff,
+  RefreshCw,
 } from "lucide-react";
 import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { toast } from "sonner";
@@ -52,20 +53,37 @@ interface TicketData {
     id: string;
     createdAt: Date;
   };
+  ticketType?: {
+    id: string;
+    name: string;
+    price: number;
+  };
 }
 
 interface ScanTicketProps {
   eventId: string;
+  securityId?: string;
+  onVerificationUpdate?: (stats: {
+    totalVerified: number;
+    recentActivity: number;
+  }) => void;
 }
 
-export function ScanTicket({ eventId }: ScanTicketProps) {
+export function ScanTicket({
+  eventId,
+  securityId,
+  onVerificationUpdate,
+}: ScanTicketProps) {
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [manualInput, setManualInput] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [isMarkingUsed, setIsMarkingUsed] = useState(false);
-  const [searchType, setSearchType] = useState<"qr" | "name" | "phone">("qr");
+  const [searchType, setSearchType] = useState<
+    "qr" | "name" | "phone" | "email"
+  >("name");
+  const [verificationHistory, setVerificationHistory] = useState<any[]>([]);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
@@ -77,6 +95,7 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
         await scanner.clear();
         scannerRef.current = null;
         setIsCameraActive(false);
+        setIsScanning(false);
       } catch (err) {
         console.warn("Failed to stop scanner:", err);
       }
@@ -104,16 +123,18 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
       }
 
       setIsCameraActive(true);
+      setIsScanning(true);
+
       await scanner.start(
         backCamera.id,
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (decodedText) => {
+          setIsScanning(false);
           await handleTicketVerification(decodedText, "qr");
           await stopScanner();
         },
         (errorMessage, error) => {
-          // Optionally handle scan errors here, or leave empty if not needed
-          // console.warn("QR scan error:", errorMessage, error);
+          // Ignore decode errors - they're normal when no QR code is visible
         }
       );
     } catch (err) {
@@ -122,8 +143,9 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
         description: "Failed to initialize camera.",
       });
       setIsCameraActive(false);
+      setIsScanning(false);
     }
-  }, [toast, stopScanner]);
+  }, [stopScanner]);
 
   // Ensure qr-reader div is present before starting scanner
   useEffect(() => {
@@ -143,26 +165,48 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
 
   const handleTicketVerification = async (
     input: string,
-    type: "qr" | "name" | "phone"
+    type: "qr" | "name" | "phone" | "email"
   ) => {
     if (!input.trim()) return;
 
     setIsVerifying(true);
     try {
-      const response = await fetch("/api/tickets/verify", {
+      const endpoint = securityId
+        ? "/api/tickets/verify"
+        : "/api/security/verify-ticket";
+      const requestBody = {
+        eventId,
+        ...(securityId && { securityId }),
+        [type === "qr" ? "qrCode" : type]: input.trim(),
+      };
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventId,
-          [type === "qr" ? "qrCode" : type === "name" ? "name" : "phone"]:
-            input.trim(),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
 
       if (response.ok && data.valid) {
         setTicketData(data.ticket);
+
+        // Add to verification history
+        setVerificationHistory((prev) => [
+          {
+            id: Date.now(),
+            ticket: data.ticket,
+            timestamp: new Date(),
+            action: "verified",
+          },
+          ...prev.slice(0, 9),
+        ]);
+
+        // Update verification stats
+        if (onVerificationUpdate && data.stats) {
+          onVerificationUpdate(data.stats);
+        }
+
         toast("✅ Ticket Found", {
           description: `Valid ticket for ${
             data.ticket.user.name || data.ticket.user.email
@@ -190,35 +234,59 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
 
     setIsMarkingUsed(true);
     try {
-      const response = await fetch("/api/tickets/mark-used", {
+      const endpoint = securityId
+        ? "/api/security/mark-ticket-used"
+        : "/api/tickets/mark-used";
+      const requestBody = {
+        ticketId: ticketData.id,
+        eventId,
+        ...(securityId && { securityId }),
+      };
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticketId: ticketData.id,
-          eventId,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setTicketData({
+        const updatedTicket = {
           ...ticketData,
           isUsed: true,
           usedAt: new Date(),
           status: "USED",
-        });
-        toast.success("✅ Ticket Marked as Used", {
+        };
+        setTicketData(updatedTicket);
+
+        // Update verification history
+        setVerificationHistory((prev) => [
+          {
+            id: Date.now(),
+            ticket: updatedTicket,
+            timestamp: new Date(),
+            action: "marked_used",
+          },
+          ...prev.slice(0, 9),
+        ]);
+
+        // Update verification stats
+        if (onVerificationUpdate && data.stats) {
+          onVerificationUpdate(data.stats);
+        }
+
+        toast("✅ Ticket Marked as Used", {
           description: "Ticket has been successfully validated.",
         });
       } else {
-        toast.error("❌ Failed to Mark Ticket", {
+        toast("❌ Failed to Mark Ticket", {
           description: data.message || "Failed to mark ticket as used.",
         });
       }
     } catch (error) {
       console.error("Mark as used error:", error);
-      toast.error("❌ Error", {
+      toast("❌ Error", {
         description: "Network error. Please try again.",
       });
     } finally {
@@ -232,6 +300,8 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
         return "Ticket not found in the system.";
       case 409:
         return "This ticket has already been used.";
+      case 403:
+        return "You are not authorized to verify tickets for this event.";
       default:
         return message || "Invalid ticket or verification failed.";
     }
@@ -243,6 +313,8 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
         return "❌ Ticket Not Found";
       case 409:
         return "⚠️ Already Used";
+      case 403:
+        return "🚫 Access Denied";
       default:
         return "❌ Invalid Ticket";
     }
@@ -268,7 +340,6 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
   const resetVerification = () => {
     setTicketData(null);
     setManualInput("");
-    setSearchType("qr");
   };
 
   return (
@@ -313,8 +384,16 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
               />
             </div>
 
+            {isScanning && (
+              <Alert>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                <AlertDescription>Scanning for QR codes...</AlertDescription>
+              </Alert>
+            )}
+
             {isVerifying && (
               <Alert>
+                <RefreshCw className="h-4 w-4 animate-spin" />
                 <AlertDescription>
                   Verifying ticket... Please wait.
                 </AlertDescription>
@@ -334,7 +413,7 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Search by:</Label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button
                   variant={searchType === "name" ? "default" : "outline"}
                   size="sm"
@@ -342,6 +421,14 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
                 >
                   <User className="w-4 h-4 mr-1" />
                   Name
+                </Button>
+                <Button
+                  variant={searchType === "email" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSearchType("email")}
+                >
+                  <Mail className="w-4 h-4 mr-1" />
+                  Email
                 </Button>
                 <Button
                   variant={searchType === "phone" ? "default" : "outline"}
@@ -356,13 +443,19 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
 
             <div className="space-y-2">
               <Label>
-                {searchType === "name" ? "Ticket Holder Name" : "Phone Number"}
+                {searchType === "name"
+                  ? "Ticket Holder Name"
+                  : searchType === "email"
+                  ? "Email Address"
+                  : "Phone Number"}
               </Label>
               <div className="flex gap-2">
                 <Input
                   placeholder={
                     searchType === "name"
                       ? "Enter ticket holder's name"
+                      : searchType === "email"
+                      ? "Enter email address"
                       : "Enter phone number"
                   }
                   value={manualInput}
@@ -379,7 +472,11 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
                   }
                   disabled={!manualInput.trim() || isVerifying}
                 >
-                  <Search className="w-4 h-4" />
+                  {isVerifying ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -401,7 +498,7 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Ticket Holder Info */}
-            <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-4 p-4 rounded-lg">
               <Avatar className="w-16 h-16">
                 <AvatarImage
                   src={ticketData.user.profileImage || "/placeholder.svg"}
@@ -415,7 +512,7 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
                 <h3 className="text-xl font-semibold">
                   {ticketData.user.name || "Unknown User"}
                 </h3>
-                <div className="space-y-1 text-sm text-gray-600">
+                <div className="space-y-1 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4" />
                     {ticketData.user.email}
@@ -436,21 +533,19 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-3">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Ticket Type
-                  </Label>
-                  <p className="text-lg font-semibold">{ticketData.type}</p>
+                  <Label className="text-sm font-medium ">Ticket Type</Label>
+                  <p className="text-lg font-semibold">
+                    {ticketData.ticketType?.name || ticketData.type}
+                  </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Price
-                  </Label>
-                  <p className="text-lg font-semibold">Ghc{ticketData.price}</p>
+                  <Label className="text-sm font-medium ">Price</Label>
+                  <p className="text-lg font-semibold">
+                    GHC {ticketData.ticketType?.price || ticketData.price}
+                  </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Purchase Date
-                  </Label>
+                  <Label className="text-sm font-medium ">Purchase Date</Label>
                   <p className="text-sm">
                     {new Date(ticketData.order.createdAt).toLocaleDateString()}
                   </p>
@@ -459,24 +554,18 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
 
               <div className="space-y-3">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Event
-                  </Label>
+                  <Label className="text-sm font-medium ">Event</Label>
                   <p className="font-semibold">{ticketData.event.title}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Event Date
-                  </Label>
+                  <Label className="text-sm font-medium ">Event Date</Label>
                   <div className="flex items-center gap-1 text-sm">
                     <Calendar className="w-4 h-4" />
                     {new Date(ticketData.event.startDate).toLocaleDateString()}
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">
-                    Location
-                  </Label>
+                  <Label className="text-sm font-medium ">Location</Label>
                   <div className="flex items-center gap-1 text-sm">
                     <MapPin className="w-4 h-4" />
                     {ticketData.event.location}
@@ -508,7 +597,10 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
                 }
               >
                 {isMarkingUsed ? (
-                  "Marking..."
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Marking...
+                  </>
                 ) : ticketData.isUsed ? (
                   <>
                     <XCircle className="w-4 h-4 mr-2" />
@@ -529,6 +621,57 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
         </Card>
       )}
 
+      {/* Recent Verifications */}
+      {verificationHistory.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="w-5 h-5" />
+              Recent Verifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {verificationHistory.slice(0, 5).map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                >
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage
+                      src={item.ticket.user.profileImage || "/placeholder.svg"}
+                    />
+                    <AvatarFallback>
+                      {item.ticket.user.name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-medium">
+                      {item.ticket.user.name || "Unknown User"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.ticket.type} - GHC {item.ticket.price}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <Badge
+                      variant={
+                        item.action === "marked_used" ? "default" : "secondary"
+                      }
+                    >
+                      {item.action === "marked_used" ? "Used" : "Verified"}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {item.timestamp.toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Instructions */}
       <Card>
         <CardHeader>
@@ -538,7 +681,7 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
             <div>
               <h4 className="font-semibold mb-2">Scanning Tickets:</h4>
-              <ul className="space-y-1 text-gray-600">
+              <ul className="space-y-1 text-muted-foreground">
                 <li>• Use the camera to scan QR codes on tickets</li>
                 <li>• Ensure good lighting for better scanning</li>
                 <li>• Hold the device steady when scanning</li>
@@ -547,8 +690,8 @@ export function ScanTicket({ eventId }: ScanTicketProps) {
             </div>
             <div>
               <h4 className="font-semibold mb-2">Manual Search:</h4>
-              <ul className="space-y-1 text-gray-600">
-                <li>• Search by ticket holder's name or phone</li>
+              <ul className="space-y-1 text-muted-foreground">
+                <li>• Search by ticket holder's name, email, or phone</li>
                 <li>• Use exact spelling for name searches</li>
                 <li>• Include country code for phone searches</li>
                 <li>• Each ticket can only be used once</li>

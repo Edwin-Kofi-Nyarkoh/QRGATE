@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +40,6 @@ import {
   UserCheck,
   ExternalLink,
 } from "lucide-react";
-import { toast } from "sonner";
 
 interface SecurityOfficer {
   id: string;
@@ -72,6 +72,8 @@ export function SecurityOfficersManagement({
     phone: "",
   });
 
+  const { toast } = useToast();
+
   const fetchOfficers = async () => {
     setIsLoading(true);
     try {
@@ -82,8 +84,10 @@ export function SecurityOfficersManagement({
       }
     } catch (error) {
       console.error("Error fetching officers:", error);
-      toast("Error", {
+      toast({
+        title: "Error",
         description: "Failed to load security officers.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -92,8 +96,10 @@ export function SecurityOfficersManagement({
 
   const handleCreateOfficer = async () => {
     if (!newOfficer.name || !newOfficer.email) {
-      toast("Validation Error", {
+      toast({
+        title: "Validation Error",
         description: "Name and email are required.",
+        variant: "destructive",
       });
       return;
     }
@@ -113,19 +119,24 @@ export function SecurityOfficersManagement({
         setOfficers([...officers, data.officer]);
         setNewOfficer({ name: "", email: "", phone: "" });
         setIsCreateDialogOpen(false);
-        toast("Success", {
+        toast({
+          title: "Success",
           description: "Security officer created successfully.",
         });
       } else {
         const error = await response.json();
-        toast("Error", {
+        toast({
+          title: "Error",
           description: error.message || "Failed to create security officer.",
+          variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error creating officer:", error);
-      toast("Error", {
+      toast({
+        title: "Error",
         description: "Failed to create security officer.",
+        variant: "destructive",
       });
     }
   };
@@ -147,7 +158,8 @@ export function SecurityOfficersManagement({
             officer.id === officerId ? { ...officer, active: !active } : officer
           )
         );
-        toast("Success", {
+        toast({
+          title: "Success",
           description: `Security officer ${
             !active ? "activated" : "deactivated"
           }.`,
@@ -155,54 +167,25 @@ export function SecurityOfficersManagement({
       }
     } catch (error) {
       console.error("Error toggling officer status:", error);
-      toast("Error", { description: "Failed to update officer status." });
+      toast({
+        title: "Error",
+        description: "Failed to update officer status.",
+        variant: "destructive",
+      });
     }
   };
 
   const copySecurityLink = (officerId: string) => {
-    const link = `${window.location.origin}/security/${eventId}`;
-    if (
-      navigator &&
-      navigator.clipboard &&
-      typeof navigator.clipboard.writeText === "function"
-    ) {
-      navigator.clipboard
-        .writeText(link)
-        .then(() => {
-          toast("Link Copied", {
-            description: "Security verification link copied to clipboard.",
-          });
-        })
-        .catch(() => {
-          fallbackCopyTextToClipboard(link);
-        });
-    } else {
-      fallbackCopyTextToClipboard(link);
-    }
+    const link = `${window.location.origin}/security/${eventId}/${officerId}`;
+    navigator.clipboard.writeText(link);
+    toast({
+      title: "Link Copied",
+      description: "Security verification link copied to clipboard.",
+    });
   };
 
-  // Fallback for older browsers
-  function fallbackCopyTextToClipboard(text: string) {
-    try {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      toast("Link Copied", {
-        description: "Security verification link copied to clipboard.",
-      });
-    } catch (err) {
-      toast("Error", {
-        description: "Failed to copy link. Please copy manually.",
-      });
-    }
-  }
-
-  const openSecurityLink = () => {
-    const link = `${window.location.origin}/security/${eventId}`;
+  const openSecurityLink = (officerId: string) => {
+    const link = `${window.location.origin}/security/${eventId}/${officerId}`;
     window.open(link, "_blank");
   };
 
@@ -215,31 +198,55 @@ export function SecurityOfficersManagement({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <Shield className="w-5 h-5" />
                 Security Officers
               </CardTitle>
-              <p className="text-sm text-muted-foregroundmt-1">
+              <p className="text-sm text-gray-600 mt-1">
                 Manage security officers for {eventTitle}
               </p>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={openSecurityLink}
-                className="flex items-center gap-2"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Open Security Portal
-              </Button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              {officers.length > 0 ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 w-full sm:w-auto"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Open Security Portal
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {officers.map((officer) => (
+                      <DropdownMenuItem
+                        key={officer.id}
+                        onClick={() => openSecurityLink(officer.id)}
+                      >
+                        {officer.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  variant="outline"
+                  disabled
+                  className="flex items-center gap-2 w-full sm:w-auto"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  No Officers Yet
+                </Button>
+              )}
               <Dialog
                 open={isCreateDialogOpen}
                 onOpenChange={setIsCreateDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2">
+                  <Button className="flex items-center gap-2 w-full sm:w-auto">
                     <Plus className="w-4 h-4" />
                     Add Officer
                   </Button>
@@ -319,61 +326,45 @@ export function SecurityOfficersManagement({
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Officer</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <div className="space-y-4">
+              {/* Mobile: officer cards, Desktop: table */}
+              <div className="block sm:hidden">
                 {officers.map((officer) => (
-                  <TableRow key={officer.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage
-                            src={
-                              officer.user?.profileImage || "/placeholder.svg"
-                            }
-                            alt={officer.name}
-                          />
-                          <AvatarFallback>
-                            {officer.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{officer.name}</p>
-                        </div>
+                  <Card key={officer.id} className="p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage
+                          src={officer.user?.profileImage || "/placeholder.svg"}
+                          alt={officer.name}
+                        />
+                        <AvatarFallback>
+                          {officer.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-base">{officer.name}</p>
+                        <Badge
+                          variant={officer.active ? "default" : "secondary"}
+                          className={
+                            officer.active
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
+                          }
+                        >
+                          {officer.active ? "Active" : "Inactive"}
+                        </Badge>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <p>{officer.email}</p>
-                        {officer.phone && (
-                          <p className="text-gray-500">{officer.phone}</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={officer.active ? "default" : "secondary"}
-                        className={
-                          officer.active
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }
-                      >
-                        {officer.active ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-500">
-                      {new Date(officer.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
+                    </div>
+                    <div className="text-sm mb-2">
+                      <p>{officer.email}</p>
+                      {officer.phone && (
+                        <p className="text-gray-500">{officer.phone}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-500">
+                        {new Date(officer.createdAt).toLocaleDateString()}
+                      </span>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">
@@ -406,11 +397,106 @@ export function SecurityOfficersManagement({
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Officer</TableHead>
+                      <TableHead>Contact</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {officers.map((officer) => (
+                      <TableRow key={officer.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage
+                                src={
+                                  officer.user?.profileImage ||
+                                  "/placeholder.svg"
+                                }
+                                alt={officer.name}
+                              />
+                              <AvatarFallback>
+                                {officer.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{officer.name}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <p>{officer.email}</p>
+                            {officer.phone && (
+                              <p className="text-gray-500">{officer.phone}</p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={officer.active ? "default" : "secondary"}
+                            className={
+                              officer.active
+                                ? "bg-green-100 text-green-800"
+                                : "bg-gray-100 text-gray-800"
+                            }
+                          >
+                            {officer.active ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-500">
+                          {new Date(officer.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => copySecurityLink(officer.id)}
+                              >
+                                <Copy className="w-4 h-4 mr-2" />
+                                Copy Security Link
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleToggleActive(officer.id, officer.active)
+                                }
+                              >
+                                {officer.active ? (
+                                  <>
+                                    <UserX className="w-4 h-4 mr-2" />
+                                    Deactivate
+                                  </>
+                                ) : (
+                                  <>
+                                    <UserCheck className="w-4 h-4 mr-2" />
+                                    Activate
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -418,35 +504,57 @@ export function SecurityOfficersManagement({
       {/* Security Link Information */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
-            Security Verification Portal
-          </CardTitle>
+          <CardTitle className="text-lg">Security Verification Links</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800 mb-2">
-                <strong>Security Portal Link:</strong>
-              </p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 p-2 bg-white rounded text-sm">
-                  {`${
-                    typeof window !== "undefined" ? window.location.origin : ""
-                  }/security/${eventId}`}
-                </code>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => copySecurityLink("")}
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
+            {officers.length === 0 ? (
+              <div className="p-4 rounded-lg text-center">
+                <p className="text-sm text-gray-600">
+                  Create security officers to generate verification links.
+                </p>
               </div>
-            </div>
-            <div className="text-sm text-muted-foreground">
+            ) : (
+              <div className="space-y-3">
+                {officers.map((officer) => (
+                  <div
+                    key={officer.id}
+                    className="p-4 bg-background rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+                  >
+                    <div className="flex items-center gap-2 mb-1 sm:mb-0">
+                      <p className="text-sm font-medium text-blue-800">
+                        {officer.name} - Security Portal
+                      </p>
+                      <Badge variant={officer.active ? "default" : "secondary"}>
+                        {officer.active ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <code className="flex-1 p-2 rounded text-xs break-all bg-muted">
+                        {`${
+                          typeof window !== "undefined"
+                            ? window.location.origin
+                            : ""
+                        }/security/${eventId}/${officer.id}`}
+                      </code>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copySecurityLink(officer.id)}
+                        className="shrink-0"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="text-sm text-gray-600">
               <p>
-                Share this link with your security officers to access the ticket
-                verification portal for this event.
+                Share these individual links with your security officers to
+                access the ticket verification portal for this event. Each
+                officer has their own unique access link.
               </p>
             </div>
           </div>
