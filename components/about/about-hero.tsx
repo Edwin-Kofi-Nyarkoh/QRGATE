@@ -21,7 +21,7 @@ export function AboutHero({
         <Card className="overflow-hidden">
           <div className="relative h-64 md:h-80">
             <Image 
-              src="/images/cancelled-ticket.png" 
+              src="https://res.cloudinary.com/dggaqzud0/image/upload/v1750455981/generate_an_image_of_gb0tff.png" 
               alt="Cancelled Paper Ticket" 
               fill 
               className="object-cover" 
@@ -32,7 +32,7 @@ export function AboutHero({
         <Card className="overflow-hidden">
           <div className="relative h-48">
             <Image 
-              src="/placeholder.svg?height=200&width=400" 
+              src="https://res.cloudinary.com/dggaqzud0/image/upload/v1749747364/qrgate/events/wnrmwkdfwpxnqix2fgig.jpg" 
               alt="Our Office" 
               fill 
               className="object-cover" 

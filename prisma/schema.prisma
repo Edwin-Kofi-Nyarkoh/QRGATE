@@ -26,6 +26,7 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relations
+  newsletterSubscriptions  NewsletterSubscription[]
   tickets       Ticket[]
   events        Event[]
   orders        Order[]
@@ -258,6 +259,14 @@ model TeamMember {
   order     Int
   about     About    @relation("AboutTeam", fields: [aboutId], references: [id])
   aboutId   String
+}
+
+model NewsletterSubscription {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?  
+  createdAt DateTime @default(now())
 }
 
 enum Role {

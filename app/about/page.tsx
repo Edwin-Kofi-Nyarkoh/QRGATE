@@ -8,7 +8,7 @@ import { AboutHero } from "@/components/about/about-hero"
 import { AboutTeam } from "@/components/about/about-team"
 import { AboutContact } from "@/components/about/about-contact"
 
-export function AboutPage() {
+export default function AboutPage() {
   const { data: aboutData, isLoading, error } = useAbout()
 
   if (error) {
