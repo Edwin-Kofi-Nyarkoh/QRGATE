@@ -43,14 +43,14 @@ export function Navbar() {
   const { getTotalItems } = useCartStore();
   const cartCount = getTotalItems();
   const pathname = usePathname();
-  const isSticky = pathname === "/" || pathname.startsWith("/events");
+  const isSticky = pathname === "/" || pathname.startsWith("/events") || pathname.startsWith("/about");
 
   return (
     <nav
-      className={`bg-background px-4 py-3 dark:bg-background dark:text-foreground ${
-        isSticky ? "sticky top-0 z-30" : ""
-      }`}
-    >
+  className={`bg-white/30 dark:bg-gray-950/70 backdrop-blur-md px-4 py-3 dark:text-foreground ${
+    isSticky ? "sticky top-0 z-30" : ""
+  }`}
+>
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-y-2">
         {/* Logo */}
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -77,13 +77,17 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
           <Link
             href="/"
-            className="hover:text-foreground transition-colors font-medium"
+            className={`transition-colors font-medium${
+              pathname ==="/" ? " text-primary underline underline-offset-4" : "hover:text-muted-foreground"
+            }`}
           >
             HOME
           </Link>
           <Link
             href="/events"
-            className="hover:text-foreground transition-colors font-medium"
+            className={`transition-colors font-medium ${
+              pathname.startsWith("/events") ? " text-primary underline underline-offset-4" : "hover:text-muted-foreground"
+            }`}
           >
             DISCOVER EVENTS
           </Link>
@@ -226,13 +230,17 @@ export function Navbar() {
         <div className="flex w-full justify-center gap-8 mt-2 md:hidden order-last">
           <Link
             href="/"
-            className="hover:text-primary transition-colors font-medium"
+            className={`transition-colors font-medium ${
+              pathname === "/" ? "text-primary underline underline-offset-4" : "hover:text-primary"
+            }`}
           >
             HOME
           </Link>
           <Link
             href="/events"
-            className="hover:text-primary transition-colors font-medium"
+            className={`transition-colors font-medium ${
+              pathname.startsWith("/events") ? "text-primary underline underline-offset-4" : "hover:text-primary "
+            }`}
           >
             DISCOVER EVENTS
           </Link>

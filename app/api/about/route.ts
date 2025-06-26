@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         teamSize: 3,
         eventsHosted: 120,
         happyCustomers: 3500,
-        values: ["Innovation", "Creativity", "Community"],
+        values: ["Innovation", "Creativity", "Community", "Excellence", "Integrity", "Accessibility", "Growth"],
         contactEmail: "contact@placeholder.com",
         contactPhone: "+233 000 000 000",
         contactWebsite: "https://placeholder.com",
