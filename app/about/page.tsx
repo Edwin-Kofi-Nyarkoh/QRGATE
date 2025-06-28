@@ -1,25 +1,27 @@
-"use client"
+"use client";
 
-import { useAbout } from "@/lib/api/about"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardHeader } from "@/components/ui/card"
-import { AboutStats } from "@/components/about/about-stats"
-import { AboutHero } from "@/components/about/about-hero"
-import { AboutTeam } from "@/components/about/about-team"
-import { AboutContact } from "@/components/about/about-contact"
+import { useAbout } from "@/lib/api/about";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardHeader } from "@/components/ui/card";
+import { AboutStats } from "@/components/about/about-stats";
+import { AboutHero } from "@/components/about/about-hero";
+import { AboutTeam } from "@/components/about/about-team";
+import { AboutContact } from "@/components/about/about-contact";
 
 export default function AboutPage() {
-  const { data: aboutData, isLoading, error } = useAbout()
+  const { data: aboutData, isLoading, error } = useAbout();
 
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading About Information</h1>
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
+            Error Loading About Information
+          </h1>
           <p className="text-muted-foreground">Please try again later.</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (isLoading) {
@@ -52,10 +54,8 @@ export default function AboutPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
-
-  console.log("About data:", aboutData);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -68,7 +68,7 @@ export default function AboutPage() {
       </div>
 
       {/* Stats Section */}
-      <AboutStats 
+      <AboutStats
         eventsHosted={aboutData?.eventsHosted}
         happyCustomers={aboutData?.happyCustomers}
         teamSize={aboutData?.teamSize}
@@ -76,25 +76,25 @@ export default function AboutPage() {
       />
 
       {/* Hero Section */}
-      <AboutHero 
+      <AboutHero
         story={aboutData?.story}
         mission={aboutData?.mission}
         vision={aboutData?.vision}
       />
 
       {/* Team Section */}
-      <AboutTeam 
+      <AboutTeam
         teamMembers={aboutData?.teamMembers}
         values={aboutData?.values}
       />
 
       {/* Contact Section */}
       <div className="mt-12">
-        <AboutContact 
+        <AboutContact
           contact={aboutData?.contact}
           location={aboutData?.location}
         />
       </div>
     </div>
-  )
+  );
 }
