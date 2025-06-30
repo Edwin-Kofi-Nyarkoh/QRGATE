@@ -22,8 +22,6 @@ import { ImageGallery } from "@/components/events/image-gallery";
 import { BuyNowButton } from "@/components/events/buy-now-button";
 import { useCartStore } from "@/lib/store/cart-store";
 import { toast } from "sonner";
-// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-// import { Label } from "@/components/ui/label";
 import { TicketTypeSelector } from "@/components/ui/ticket-type-selector";
 
 interface EventDetailsProps {
@@ -94,7 +92,16 @@ export function EventDetails({ event }: EventDetailsProps) {
     },
   ];
 
-  console.log("Ticket Types:", event);
+  // Compute event status for countdown
+  const now = new Date();
+  const start = new Date(event.startDate);
+  const end = new Date(event.endDate);
+  let eventStatus: "upcoming" | "live" | "ended" = "upcoming";
+  if (now >= start && now <= end) {
+    eventStatus = "live";
+  } else if (now > end) {
+    eventStatus = "ended";
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -173,9 +180,11 @@ export function EventDetails({ event }: EventDetailsProps) {
         <div>
           <Card>
             <CardContent className="p-6 space-y-6">
-              <EventCountdown date={new Date(event.startDate)} />
-
               {/* Ticket Type Selection */}
+              <div className="mb-2">
+                <EventCountdown date={start} status={eventStatus} />
+              </div>
+
               <TicketTypeSelector
                 ticketTypes={ticketTypes}
                 onSelect={handleTicketSelect}

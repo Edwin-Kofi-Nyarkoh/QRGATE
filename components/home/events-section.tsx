@@ -16,13 +16,6 @@ import { formatDate } from "@/lib/date-utils";
 import { useCartStore } from "@/lib/store/cart-store";
 import type { Event } from "@/lib/types/api";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { TicketTypeSelector } from "@/components/ui/ticket-type-selector";
 import { EventsPageSkeleton } from "../events/events-page-skeleton";
 

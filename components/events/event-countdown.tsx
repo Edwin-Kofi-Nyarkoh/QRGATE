@@ -1,23 +1,24 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface CountdownProps {
-  date: Date
+  date: Date;
+  status?: "upcoming" | "live" | "ended";
 }
 
-export function EventCountdown({ date }: CountdownProps) {
+export function EventCountdown({ date, status }: CountdownProps) {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
-  })
+  });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const difference = +date - +new Date()
+      const difference = +date - +new Date();
 
       if (difference > 0) {
         setTimeLeft({
@@ -25,17 +26,28 @@ export function EventCountdown({ date }: CountdownProps) {
           hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
           minutes: Math.floor((difference / 1000 / 60) % 60),
           seconds: Math.floor((difference / 1000) % 60),
-        })
+        });
       } else {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       }
-    }
+    };
 
-    calculateTimeLeft()
-    const timer = setInterval(calculateTimeLeft, 1000)
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
 
-    return () => clearInterval(timer)
-  }, [date])
+    return () => clearInterval(timer);
+  }, [date]);
+
+  if (status === "live") {
+    return (
+      <div className="text-green-600 font-bold text-lg text-center">Live</div>
+    );
+  }
+  if (status === "ended") {
+    return (
+      <div className="text-red-600 font-bold text-lg text-center">Ended</div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-4 gap-2 text-center">
@@ -44,7 +56,7 @@ export function EventCountdown({ date }: CountdownProps) {
       <CountdownItem value={timeLeft.minutes} label="MINS" />
       <CountdownItem value={timeLeft.seconds} label="SECS" />
     </div>
-  )
+  );
 }
 
 function CountdownItem({ value, label }: { value: number; label: string }) {
@@ -55,5 +67,5 @@ function CountdownItem({ value, label }: { value: number; label: string }) {
         <div className="text-xs text-gray-500">{label}</div>
       </CardContent>
     </Card>
-  )
+  );
 }
