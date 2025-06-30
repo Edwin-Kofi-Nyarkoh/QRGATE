@@ -181,13 +181,25 @@ export async function POST(request: NextRequest) {
       });
 
       // ✉️ Send email once with all QR codes
+      // Attach QR codes as images for better email compatibility
+      const attachments = ticketsToCreate.map((t, idx) => {
+        // Extract base64 from data URL
+        const base64 = t.qrCode.split(",")[1];
+        return {
+          filename: `ticket-${idx + 1}.png`,
+          content: base64,
+          encoding: "base64",
+          cid: `qrcode${idx + 1}@tickets.qrgate.app`,
+        };
+      });
+
       await sendTicketEmail({
         user: {
           name: session.user.name ?? null,
           email: session.user.email!,
         },
-        tickets: ticketsToCreate.map((t) => ({
-          qrCode: t.qrCode,
+        tickets: ticketsToCreate.map((t, idx) => ({
+          qrCode: `cid:qrcode${idx + 1}@tickets.qrgate.app`,
           type: t.type,
           price: t.price,
         })),
@@ -197,6 +209,7 @@ export async function POST(request: NextRequest) {
           startDate: order.event.startDate,
           endDate: order.event.endDate,
         },
+        attachments,
       });
 
       await prisma.ticketType.update({
