@@ -102,7 +102,7 @@ export default function SignUpPage() {
               <Input
                 id="name"
                 name="name"
-                placeholder="John Doe"
+                placeholder="Edwin Kofi"
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -125,7 +125,7 @@ export default function SignUpPage() {
               <Input
                 id="phone"
                 name="phone"
-                placeholder="+233 234 567 890"
+                placeholder="+233 535870509"
                 value={formData.phone}
                 onChange={handleChange}
                 required
