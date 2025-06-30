@@ -63,14 +63,14 @@ export function EventsSection() {
                 <Calendar className="w-6 h-6" />
                 Upcoming Events
               </h2>
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <Button variant="outline" size="sm">
                   LIST VIEW
                 </Button>
                 <Button variant="outline" size="sm">
                   GRID VIEW
                 </Button>
-              </div>
+              </div> */}
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">

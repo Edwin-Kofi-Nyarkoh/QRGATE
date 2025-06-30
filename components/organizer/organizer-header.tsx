@@ -37,9 +37,9 @@ export function OrganizerHeader() {
       </div>
 
       <div className="flex items-center space-x-2 md:space-x-4">
-        <Button variant="ghost" size="icon" className="text-muted-foreground">
+        {/* <Button variant="ghost" size="icon" className="text-muted-foreground">
           <Bell className="w-5 h-5" />
-        </Button>
+        </Button> */}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

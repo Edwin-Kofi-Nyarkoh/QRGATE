@@ -44,7 +44,7 @@ export function DashboardHeader() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Notifications */}
+          {/* Notifications
           <Button
             variant="ghost"
             size="icon"
@@ -54,7 +54,7 @@ export function DashboardHeader() {
             <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive rounded-full text-xs text-destructive-foreground flex items-center justify-center">
               3
             </span>
-          </Button>
+          </Button> */}
 
           {/* User Menu */}
           <DropdownMenu>
