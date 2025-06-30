@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { transporter } from "@/lib/email/nodemailer";
+import { ticketScanNotificationEmail } from "@/lib/email/email-templates";
 
 interface QRCodeData {
   eventId: string;
@@ -353,6 +355,21 @@ export async function POST(request: NextRequest) {
         details: "Ticket scanned for entry/exit",
         timestamp: now,
       },
+    });
+
+    // Send scan notification email
+    await transporter.sendMail({
+      from: `"QRGATE" <${process.env.EMAIL_USER}>`,
+      to: ticket.user.email,
+      subject: "Your Ticket Was Scanned",
+      html: ticketScanNotificationEmail({
+        name: ticket.user.name ?? "",
+        eventTitle: ticket.event.title,
+        scanTime: now.toLocaleString(),
+        eventWindowStart: start.toLocaleString(),
+        eventWindowEnd: end.toLocaleString(),
+        eventLocation: ticket.event.location,
+      }),
     });
 
     // Return ticket info and scan count
