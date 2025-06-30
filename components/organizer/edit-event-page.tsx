@@ -260,16 +260,16 @@ export function EditEventPage({ eventId }: EditEventPageProps) {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Music">Music</SelectItem>
-                      <SelectItem value="Sports">Sports</SelectItem>
-                      <SelectItem value="Technology">Technology</SelectItem>
-                      <SelectItem value="Business">Business</SelectItem>
-                      <SelectItem value="Arts & Culture">
-                        Arts & Culture
-                      </SelectItem>
-                      <SelectItem value="Food & Drink">Food & Drink</SelectItem>
-                      <SelectItem value="Education">Education</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem value="conference">Conference</SelectItem>
+                      <SelectItem value="workshop">Workshop</SelectItem>
+                      <SelectItem value="seminar">Seminar</SelectItem>
+                      <SelectItem value="networking">Networking</SelectItem>
+                      <SelectItem value="concert">Concert</SelectItem>
+                      <SelectItem value="festival">Festival</SelectItem>
+                      <SelectItem value="exhibition">Exhibition</SelectItem>
+                      <SelectItem value="sports">Sports</SelectItem>
+                      <SelectItem value="charity">Charity</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.category && (
