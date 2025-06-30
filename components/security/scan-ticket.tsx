@@ -79,13 +79,22 @@ export function ScanTicket({
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [manualInput, setManualInput] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
-  const [isMarkingUsed, setIsMarkingUsed] = useState(false);
+  const [scanCount, setScanCount] = useState<number | null>(null);
+  const [eventWindow, setEventWindow] = useState<{
+    start: string;
+    end: string;
+  } | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
   const [searchType, setSearchType] = useState<
     "qr" | "name" | "phone" | "email"
   >("name");
   const [verificationHistory, setVerificationHistory] = useState<any[]>([]);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
+
+  // Prevent duplicate scans: track last scanned QR and debounce
+  const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
+  const [scanCooldown, setScanCooldown] = useState(false);
 
   const stopScanner = useCallback(async () => {
     const scanner = scannerRef.current;
@@ -101,6 +110,19 @@ export function ScanTicket({
       }
     }
   }, []);
+
+  // Debounced QR scan handler
+  const handleQrScan = useCallback(
+    async (decodedText: string) => {
+      if (scanCooldown) return;
+      if (lastScannedCode === decodedText) return;
+      setScanCooldown(true);
+      setLastScannedCode(decodedText);
+      await handleTicketVerification(decodedText, "qr");
+      setTimeout(() => setScanCooldown(false), 2000); // 2s cooldown
+    },
+    [lastScannedCode, scanCooldown]
+  );
 
   const startScanner = useCallback(async () => {
     if (scannerRef.current) return;
@@ -130,7 +152,7 @@ export function ScanTicket({
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (decodedText) => {
           setIsScanning(false);
-          await handleTicketVerification(decodedText, "qr");
+          await handleQrScan(decodedText);
           await stopScanner();
         },
         (errorMessage, error) => {
@@ -145,7 +167,7 @@ export function ScanTicket({
       setIsCameraActive(false);
       setIsScanning(false);
     }
-  }, [stopScanner]);
+  }, [stopScanner, handleQrScan]);
 
   // Ensure qr-reader div is present before starting scanner
   useEffect(() => {
@@ -170,6 +192,7 @@ export function ScanTicket({
     if (!input.trim()) return;
 
     setIsVerifying(true);
+    setScanError(null);
     try {
       const endpoint = securityId
         ? "/api/tickets/verify"
@@ -190,107 +213,58 @@ export function ScanTicket({
 
       if (response.ok && data.valid) {
         setTicketData(data.ticket);
-
-        // Add to verification history
+        setScanCount(
+          typeof data.scanCount === "number" ? data.scanCount + 1 : 1
+        );
+        setEventWindow(
+          data.eventWindow
+            ? {
+                start: new Date(data.eventWindow.start).toLocaleString(),
+                end: new Date(data.eventWindow.end).toLocaleString(),
+              }
+            : null
+        );
+        setScanError(null);
         setVerificationHistory((prev) => [
           {
             id: Date.now(),
             ticket: data.ticket,
             timestamp: new Date(),
-            action: "verified",
+            action: "scanned",
           },
           ...prev.slice(0, 9),
         ]);
-
-        // Update verification stats
         if (onVerificationUpdate && data.stats) {
           onVerificationUpdate(data.stats);
         }
-
-        toast("✅ Ticket Found", {
+        toast("✅ Ticket Scanned", {
           description: `Valid ticket for ${
             data.ticket.user.name || data.ticket.user.email
           }`,
         });
       } else {
         setTicketData(null);
-        const errorMessage = getErrorMessage(response.status, data.message);
+        setScanCount(null);
+        setEventWindow(
+          data.eventWindow
+            ? {
+                start: new Date(data.eventWindow.start).toLocaleString(),
+                end: new Date(data.eventWindow.end).toLocaleString(),
+              }
+            : null
+        );
+        setScanError(data.message || "Invalid ticket or verification failed.");
         toast(getErrorTitle(response.status), {
-          description: errorMessage,
+          description: data.message || "Invalid ticket or verification failed.",
         });
       }
     } catch (error) {
-      console.error("Verification error:", error);
+      setScanError("Network error. Please try again.");
       toast("❌ Verification Failed", {
         description: "Network error. Please try again.",
       });
     } finally {
       setIsVerifying(false);
-    }
-  };
-
-  const handleMarkAsUsed = async () => {
-    if (!ticketData || ticketData.isUsed) return;
-
-    setIsMarkingUsed(true);
-    try {
-      const endpoint = securityId
-        ? "/api/security/mark-ticket-used"
-        : "/api/tickets/mark-used";
-      const requestBody = {
-        ticketId: ticketData.id,
-        eventId,
-        ...(securityId && { securityId }),
-      };
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        const updatedTicket = {
-          ...ticketData,
-          isUsed: true,
-          usedAt: new Date(),
-          status: "USED",
-        };
-        setTicketData(updatedTicket);
-
-        // Update verification history
-        setVerificationHistory((prev) => [
-          {
-            id: Date.now(),
-            ticket: updatedTicket,
-            timestamp: new Date(),
-            action: "marked_used",
-          },
-          ...prev.slice(0, 9),
-        ]);
-
-        // Update verification stats
-        if (onVerificationUpdate && data.stats) {
-          onVerificationUpdate(data.stats);
-        }
-
-        toast("✅ Ticket Marked as Used", {
-          description: "Ticket has been successfully validated.",
-        });
-      } else {
-        toast("❌ Failed to Mark Ticket", {
-          description: data.message || "Failed to mark ticket as used.",
-        });
-      }
-    } catch (error) {
-      console.error("Mark as used error:", error);
-      toast("❌ Error", {
-        description: "Network error. Please try again.",
-      });
-    } finally {
-      setIsMarkingUsed(false);
     }
   };
 
@@ -320,26 +294,38 @@ export function ScanTicket({
     }
   };
 
-  const getStatusBadge = (ticket: TicketData) => {
-    if (ticket.isUsed) {
+  const getStatusBadge = () => {
+    if (scanError) {
       return (
         <Badge variant="destructive" className="flex items-center gap-1">
           <AlertTriangle className="w-3 h-3" />
-          Already Used
+          {scanError}
         </Badge>
       );
     }
-    return (
-      <Badge variant="default" className="flex items-center gap-1 bg-green-600">
-        <CheckCircle className="w-3 h-3" />
-        Valid
-      </Badge>
-    );
+    if (scanCount !== null && eventWindow) {
+      return (
+        <Badge
+          variant="default"
+          className="flex items-center gap-1 bg-green-600"
+        >
+          <CheckCircle className="w-3 h-3" />
+          Valid ({scanCount} scan{scanCount > 1 ? "s" : ""} this event)
+        </Badge>
+      );
+    }
+    return null;
   };
 
+  // Reset last scanned code on reset
   const resetVerification = () => {
     setTicketData(null);
     setManualInput("");
+    setScanCount(null);
+    setEventWindow(null);
+    setScanError(null);
+    setLastScannedCode(null);
+    setScanCooldown(false);
   };
 
   return (
@@ -493,7 +479,7 @@ export function ScanTicket({
                 <Ticket className="w-5 h-5" />
                 Ticket Details
               </CardTitle>
-              {getStatusBadge(ticketData)}
+              {getStatusBadge()}
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -574,45 +560,28 @@ export function ScanTicket({
               </div>
             </div>
 
-            {/* Usage Information */}
-            {ticketData.isUsed && ticketData.usedAt && (
-              <Alert className="border-yellow-200 bg-yellow-50">
+            {/* Scan Count and Event Window */}
+            {eventWindow && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <Calendar className="w-4 h-4" />
+                <AlertDescription className="text-blue-800">
+                  Event window: {eventWindow.start} - {eventWindow.end}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Error Message */}
+            {scanError && (
+              <Alert className="border-red-200 bg-red-50">
                 <AlertTriangle className="w-4 h-4" />
-                <AlertDescription className="text-yellow-800">
-                  This ticket was used on{" "}
-                  {new Date(ticketData.usedAt).toLocaleString()}
+                <AlertDescription className="text-red-800">
+                  {scanError}
                 </AlertDescription>
               </Alert>
             )}
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
-              <Button
-                onClick={handleMarkAsUsed}
-                disabled={ticketData.isUsed || isMarkingUsed}
-                className={
-                  ticketData.isUsed
-                    ? "bg-red-600 hover:bg-red-700"
-                    : "bg-green-600 hover:bg-green-700"
-                }
-              >
-                {isMarkingUsed ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Marking...
-                  </>
-                ) : ticketData.isUsed ? (
-                  <>
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Already Used
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Mark as Used
-                  </>
-                )}
-              </Button>
               <Button variant="outline" onClick={resetVerification}>
                 Scan Another
               </Button>

@@ -142,6 +142,7 @@ model Ticket {
   qrCode        String   @db.Text
   type          String   // Standard, VIP, etc.
   price         Float
+  // isUsed/usedAt are now legacy, not used for entry/exit logic
   isUsed        Boolean  @default(false)
   usedAt        DateTime?
   createdAt     DateTime @default(now())
@@ -205,8 +206,8 @@ model VerificationLog {
   ticketId          String
   securityOfficerId String
   eventId           String
-  details            String?         // Additional details about the verification
-  action            String          // VERIFIED, MARKED_USED
+  details           String?         // Additional details about the verification
+  action            String          // SCANNED, MARKED_USED, ENTRY, EXIT
   timestamp         DateTime        @default(now())
   createdAt         DateTime        @default(now())
 

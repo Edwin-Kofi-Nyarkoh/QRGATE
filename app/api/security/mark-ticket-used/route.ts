@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find and update the ticket
+    // Find the ticket
     const ticket = await prisma.ticket.findFirst({
       where: {
         id: ticketId,
@@ -43,29 +43,66 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (ticket.isUsed) {
+    // Fetch event start/end
+    const event = await prisma.event.findUnique({
+      where: { id: ticket.eventId },
+      select: { startDate: true, endDate: true },
+    });
+    if (!event) {
+      return NextResponse.json({ message: "Event not found" }, { status: 404 });
+    }
+    const now = new Date();
+    const start = new Date(event.startDate);
+    const end = new Date(event.endDate);
+
+    if (now < start) {
       return NextResponse.json(
-        { message: "Ticket has already been used" },
-        { status: 409 }
+        {
+          message: `Ticket marking is not allowed before the event starts. Event starts at ${start.toLocaleString()}`,
+        },
+        { status: 403 }
+      );
+    }
+    if (now > end) {
+      return NextResponse.json(
+        {
+          message: `Ticket marking is not allowed after the event ends. Event ended at ${end.toLocaleString()}`,
+        },
+        { status: 403 }
       );
     }
 
-    // Mark ticket as used
-    const updatedTicket = await prisma.ticket.update({
-      where: { id: ticketId },
-      data: {
-        isUsed: true,
-        usedAt: new Date(),
+    // Count previous marks for this ticket during the event
+    const markCount = await prisma.verificationLog.count({
+      where: {
+        ticketId: ticket.id,
+        eventId: ticket.eventId,
+        timestamp: {
+          gte: start,
+          lte: end,
+        },
+        action: "MARKED_USED",
       },
     });
+    const MAX_MARKS_PER_TICKET = 100; // or set dynamically per event
+    if (markCount >= MAX_MARKS_PER_TICKET) {
+      return NextResponse.json(
+        {
+          message: `This ticket has reached the maximum number of allowed marks for this event.`,
+        },
+        { status: 429 }
+      );
+    }
 
-    // Log the action
+    // Log the mark (do not update isUsed/usedAt)
     await prisma.verificationLog.create({
       data: {
         ticketId: ticket.id,
         securityOfficerId: securityOfficer.id,
         eventId: eventId,
         action: "MARKED_USED",
+        details: "Ticket marked as used for entry/exit",
+        timestamp: now,
       },
     });
 
@@ -81,12 +118,16 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
-      ticket: updatedTicket,
-      message: "Ticket marked as used successfully",
+      ticket: ticket,
+      message: `Ticket marked as used successfully (${
+        markCount + 1
+      } times this event)`,
       stats: {
         totalVerified: stats._count.id,
         recentActivity: stats._count.id,
       },
+      markCount: markCount + 1,
+      eventWindow: { start, end },
     });
   } catch (error) {
     console.error("Error marking ticket as used:", error);
