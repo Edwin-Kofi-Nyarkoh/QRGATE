@@ -4,30 +4,54 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface CountdownProps {
-  date: Date;
-  status?: "upcoming" | "live" | "ended";
+  startDate: Date;
+  endDate: Date;
 }
 
-export function EventCountdown({ date, status }: CountdownProps) {
+export function EventCountdown({ startDate, endDate }: CountdownProps) {
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
   });
+  const [status, setStatus] = useState<"upcoming" | "live" | "ended">(
+    "upcoming"
+  );
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const difference = +date - +new Date();
+      const now = new Date();
+      const start = new Date(startDate);
+      const end = new Date(endDate);
 
-      if (difference > 0) {
-        setTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        });
+      // Determine event status
+      if (now < start) {
+        setStatus("upcoming");
+        const difference = +start - +now;
+
+        if (difference > 0) {
+          setTimeLeft({
+            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((difference / 1000 / 60) % 60),
+            seconds: Math.floor((difference / 1000) % 60),
+          });
+        }
+      } else if (now >= start && now <= end) {
+        setStatus("live");
+        const difference = +end - +now;
+
+        if (difference > 0) {
+          setTimeLeft({
+            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((difference / 1000 / 60) % 60),
+            seconds: Math.floor((difference / 1000) % 60),
+          });
+        }
       } else {
+        setStatus("ended");
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       }
     };
@@ -36,29 +60,42 @@ export function EventCountdown({ date, status }: CountdownProps) {
     const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
-  }, [date]);
+  }, [startDate, endDate]);
+
+  const getStatusText = () => {
+    switch (status) {
+      case "upcoming":
+        return "Starts in";
+      case "live":
+        return "Ends in";
+      case "ended":
+        return "Event Ended";
+      default:
+        return "";
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center gap-1">
-      {status && (
-        <span
-          className={
-            status === "live"
-              ? "text-green-600 font-bold text-lg"
-              : status === "ended"
-              ? "text-red-600 font-bold text-lg"
-              : "text-blue-600 font-bold text-lg"
-          }
-        >
-          {status.charAt(0).toUpperCase() + status.slice(1)}
-        </span>
+    <div className="flex flex-col items-center gap-2">
+      <span
+        className={`font-bold text-lg ${
+          status === "live"
+            ? "text-green-600"
+            : status === "ended"
+            ? "text-red-600"
+            : "text-blue-600"
+        }`}
+      >
+        {getStatusText()}
+      </span>
+      {status !== "ended" && (
+        <div className="grid grid-cols-4 gap-2 text-center">
+          <CountdownItem value={timeLeft.days} label="DAYS" />
+          <CountdownItem value={timeLeft.hours} label="HOURS" />
+          <CountdownItem value={timeLeft.minutes} label="MINS" />
+          <CountdownItem value={timeLeft.seconds} label="SECS" />
+        </div>
       )}
-      <div className="grid grid-cols-4 gap-2 text-center">
-        <CountdownItem value={timeLeft.days} label="DAYS" />
-        <CountdownItem value={timeLeft.hours} label="HOURS" />
-        <CountdownItem value={timeLeft.minutes} label="MINS" />
-        <CountdownItem value={timeLeft.seconds} label="SECS" />
-      </div>
     </div>
   );
 }

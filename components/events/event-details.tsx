@@ -6,16 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  Share2,
-  User,
-  Users,
-  Plus,
-  Minus,
-} from "lucide-react";
+import { Calendar, Clock, MapPin, Share2, User, Users } from "lucide-react";
 import { EventCountdown } from "@/components/events/event-countdown";
 import { formatDate, formatTime } from "@/lib/date-utils";
 import { ImageGallery } from "@/components/events/image-gallery";
@@ -180,7 +171,10 @@ export function EventDetails({ event }: EventDetailsProps) {
             <CardContent className="p-6 space-y-6">
               {/* Event Status and Countdown */}
               <div className="mb-2 flex flex-col items-center gap-1">
-                <EventCountdown date={start} status={eventStatus} />
+                <EventCountdown
+                  startDate={new Date(event.startDate)}
+                  endDate={new Date(event.endDate)}
+                />
               </div>
 
               {/* Ticket Type Selection */}
@@ -240,7 +234,7 @@ export function EventDetails({ event }: EventDetailsProps) {
                 />
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full bg-transparent"
                   onClick={handleShare}
                 >
                   <Share2 className="w-4 h-4 mr-2" />
