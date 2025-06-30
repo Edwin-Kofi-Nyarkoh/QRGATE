@@ -137,12 +137,12 @@ export default async function VerifyPaymentPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           {paymentStatus === "success" ? (
             <>
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-background">
                 <CheckCircle className="h-6 w-6 text-primary" />
               </div>
               <CardTitle className="text-2xl">Payment Successful</CardTitle>
@@ -152,7 +152,7 @@ export default async function VerifyPaymentPage({
             </>
           ) : (
             <>
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-background">
                 <XCircle className="h-6 w-6 text-red-600" />
               </div>
               <CardTitle className="text-2xl">Payment Failed</CardTitle>
@@ -163,7 +163,7 @@ export default async function VerifyPaymentPage({
           )}
         </CardHeader>
         <CardContent className="text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Reference: <span className="font-medium">{reference}</span>
           </p>
         </CardContent>

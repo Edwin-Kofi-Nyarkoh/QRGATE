@@ -1,4 +1,9 @@
 import axios from "axios";
+import { transporter } from "./email/nodemailer";
+import {
+  purchaseConfirmationEmail,
+  purchaseFailureEmail,
+} from "./email/email-templates";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_BASE_URL = process.env.PAYSTACK_BASE_URL;
@@ -90,6 +95,41 @@ export async function verifyPayment(
         },
       }
     );
+
+    //Send an email notification to the user
+    if (response.data.status && response.data.data.status === "success") {
+      const paymentData = response.data.data;
+      // Here you can send an email notification to the user
+      // For example, using a mail service like nodemailer
+      await transporter.sendMail({
+        from: `"QRGATE" <${process.env.EMAIL_USER}>`,
+        to: paymentData.customer.email,
+        subject: "Payment Successful",
+        html: purchaseConfirmationEmail({
+          name: paymentData.customer.first_name,
+          eventTitle: paymentData.metadata.eventTitle,
+          eventDate: paymentData.metadata.eventDate,
+          eventLocation: paymentData.metadata.eventLocation,
+          ticketType: paymentData.metadata.ticketType,
+          ticketNumber: paymentData.metadata.ticketNumber,
+          qrCodeUrl: paymentData.metadata.qrCodeUrl,
+        }),
+      });
+    } else {
+      console.error("Payment verification failed:", response.data.message);
+      // Send an email notification for failed payment
+      await transporter.sendMail({
+        from: `"QRGATE" <${process.env.EMAIL_USER}>`,
+        to: response.data.data.customer.email,
+        subject: "Payment Failed",
+        html: purchaseFailureEmail({
+          name: response.data.data.customer.first_name,
+          eventTitle: response.data.data.metadata.eventTitle,
+          supportEmail:
+            process.env.SUPPORT_EMAIL || "<support_email@example.com>",
+        }),
+      });
+    }
 
     return response.data.data;
   } catch (error) {

@@ -163,9 +163,6 @@ export function AttendeesOverviewPage() {
                       View Attendees
                     </Link>
                   </Button>
-                  <Button variant="outline" size="sm">
-                    <Download className="w-4 h-4" />
-                  </Button>
                 </div>
 
                 {/* Recent Attendees Preview */}

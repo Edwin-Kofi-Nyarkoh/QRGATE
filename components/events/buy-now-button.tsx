@@ -4,54 +4,54 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Loader2 } from "lucide-react";
-import { useCreateOrder } from "@/lib/api/orders";
-import { useSession } from "next-auth/react";
+import { useCartStore } from "@/lib/store/cart-store";
 import { toast } from "sonner";
 
 interface BuyNowButtonProps {
-  eventId: string;
-  price: number;
-  ticketTypeId?: string;
+  event: any;
+  ticketType: any;
   quantity?: number;
   disabled?: boolean;
 }
 
 export function BuyNowButton({
-  eventId,
-  price,
-  ticketTypeId,
+  event,
+  ticketType,
   quantity = 1,
   disabled = false,
 }: BuyNowButtonProps) {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { addItem } = useCartStore();
   const [isLoading, setIsLoading] = useState(false);
-  const createOrderMutation = useCreateOrder();
+
+  const availableTickets = ticketType.quantity - ticketType.soldCount;
 
   const handleBuyNow = async () => {
-    if (!session) {
-      toast.error("Please sign in to purchase tickets");
-      router.push(`/auth/signin?callbackUrl=/events/${eventId}`);
-      return;
-    }
-
     setIsLoading(true);
-
-    try {
-      const order = await createOrderMutation.mutateAsync({
-        eventId,
-        quantity,
-        total: price * quantity,
-        ticketTypeId,
-      });
-
-      router.push(`/checkout/${order.id}`);
-    } catch (error) {
-      console.error("Error creating order:", error);
-      toast.error("Failed to process your order");
-    } finally {
-      setIsLoading(false);
-    }
+    addItem({
+      id: `${event.id}-${ticketType.id}-${Date.now()}`,
+      eventId: event.id,
+      eventTitle: event.title,
+      eventImage: event.mainImage || undefined,
+      eventDate: event.startDate.toString(),
+      eventLocation: event.location,
+      ticketType: ticketType.name,
+      ticketTypeId: ticketType.id,
+      price: ticketType.price,
+      quantity: quantity,
+      maxQuantity: Math.min(10, availableTickets),
+      title: event.title,
+      image: event.mainImage || "",
+      startDate: event.startDate.toString(),
+    });
+    toast.success("Added to cart, redirecting to checkout", {
+      description: `${quantity} ${ticketType.name} ticket${
+        quantity > 1 ? "s" : ""
+      } for ${event.title}`,
+    });
+    // Redirect to checkout page
+    router.push("/checkout");
+    setIsLoading(false);
   };
 
   return (

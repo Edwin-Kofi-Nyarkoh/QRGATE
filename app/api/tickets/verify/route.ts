@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { transporter } from "@/lib/email/nodemailer";
+import { ticketScanNotificationEmail } from "@/lib/email/email-templates";
 
 interface QRCodeData {
   eventId: string;
@@ -11,15 +11,13 @@ interface QRCodeData {
   timestamp: number;
 }
 
+// Max scans per ticket (optional, can be set based on event duration)
+const MAX_SCANS_PER_TICKET = 100; // or set dynamically per event
+
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
-    const { qrCode, name, phone, email, eventId } = body;
+    const { qrCode, name, phone, email, eventId, securityId } = body;
 
     if (!eventId) {
       return NextResponse.json(
@@ -280,9 +278,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // (Insert after finding ticket)
     if (!ticket) {
-      console.log("Ticket not found for event:", eventId, qrCode);
-
       return NextResponse.json(
         {
           valid: false,
@@ -292,33 +289,96 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if ticket is already used
-    if (ticket.isUsed) {
+    // Fetch event start/end
+    const event = await prisma.event.findUnique({
+      where: { id: ticket.eventId },
+      select: { startDate: true, endDate: true },
+    });
+    if (!event) {
+      return NextResponse.json(
+        { valid: false, message: "Event not found" },
+        { status: 404 }
+      );
+    }
+    const now = new Date();
+    const start = new Date(event.startDate);
+    const end = new Date(event.endDate);
+
+    if (now < start) {
       return NextResponse.json(
         {
           valid: false,
-          message: "This ticket has already been used",
-          ticket: ticket,
-          usedAt: ticket.usedAt,
+          message: `Ticket scanning is not allowed before the event starts. Event starts at ${start.toLocaleString()}`,
         },
-        { status: 409 }
+        { status: 403 }
       );
     }
-
-    // Verify user has permission to access this event (for organizers)
-    const isOrganizer = ticket.event.organizerId;
-
-    if (!isOrganizer) {
+    if (now > end) {
       return NextResponse.json(
-        { message: "Insufficient permissions" },
+        {
+          valid: false,
+          message: `Ticket scanning is not allowed after the event ends. Event ended at ${end.toLocaleString()}`,
+        },
         { status: 403 }
       );
     }
 
+    // Count previous scans for this ticket during the event
+    const scanCount = await prisma.verificationLog.count({
+      where: {
+        ticketId: ticket.id,
+        eventId: ticket.eventId,
+        timestamp: {
+          gte: start,
+          lte: end,
+        },
+        action: "SCANNED",
+      },
+    });
+    if (scanCount >= MAX_SCANS_PER_TICKET) {
+      return NextResponse.json(
+        {
+          valid: false,
+          message: `This ticket has reached the maximum number of allowed scans for this event.`,
+        },
+        { status: 429 }
+      );
+    }
+
+    // Log the scan
+    await prisma.verificationLog.create({
+      data: {
+        ticketId: ticket.id,
+        eventId: ticket.eventId,
+        securityOfficerId: securityId || "SYSTEM", // Always provide a string
+        action: "SCANNED",
+        details: "Ticket scanned for entry/exit",
+        timestamp: now,
+      },
+    });
+
+    // Send scan notification email
+    await transporter.sendMail({
+      from: `"QRGATE" <${process.env.EMAIL_USER}>`,
+      to: ticket.user.email,
+      subject: "Your Ticket Was Scanned",
+      html: ticketScanNotificationEmail({
+        name: ticket.user.name ?? "",
+        eventTitle: ticket.event.title,
+        scanTime: now.toLocaleString(),
+        eventWindowStart: start.toLocaleString(),
+        eventWindowEnd: end.toLocaleString(),
+        eventLocation: ticket.event.location,
+      }),
+    });
+
+    // Return ticket info and scan count
     return NextResponse.json({
       valid: true,
-      message: "Valid ticket found",
+      message: "Ticket is valid for entry/exit.",
       ticket: ticket,
+      scanCount,
+      eventWindow: { start, end },
     });
   } catch (error) {
     console.error("Error verifying ticket:", error);

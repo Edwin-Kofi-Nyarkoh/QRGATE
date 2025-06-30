@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -62,9 +60,11 @@ const formSchema = z.object({
   startDate: z.date({
     required_error: "Start date is required",
   }),
+  startTime: z.string().min(1, "Start time is required"),
   endDate: z.date({
     required_error: "End date is required",
   }),
+  endTime: z.string().min(1, "End time is required"),
   ticketTypes: z
     .array(
       z.object({
@@ -97,6 +97,8 @@ export function CreateEventForm() {
       description: "",
       category: "",
       location: "",
+      startTime: "09:00",
+      endTime: "17:00",
       ticketTypes: [
         {
           name: "Standard",
@@ -203,13 +205,21 @@ export function CreateEventForm() {
       // Create event with the first ticket type as the default price
       const defaultTicketType = values.ticketTypes[0];
 
+      // Combine date and time for proper DateTime objects
+      const startDateTime = new Date(
+        `${values.startDate.toISOString().split("T")[0]}T${values.startTime}:00`
+      );
+      const endDateTime = new Date(
+        `${values.endDate.toISOString().split("T")[0]}T${values.endTime}:00`
+      );
+
       await createEventMutation.mutateAsync({
         title: values.title,
         description: values.description,
         category: values.category,
         location: values.location,
-        startDate: values.startDate.toISOString(),
-        endDate: values.endDate.toISOString(),
+        startDate: startDateTime.toISOString(),
+        endDate: endDateTime.toISOString(),
         price: defaultTicketType.price,
         totalTickets,
         mainImage: mainImageUrl,
@@ -353,6 +363,22 @@ export function CreateEventForm() {
 
               <FormField
                 control={form.control}
+                name="startTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Start Time</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
                 name="endDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
@@ -385,6 +411,20 @@ export function CreateEventForm() {
                         />
                       </PopoverContent>
                     </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="endTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>End Time</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

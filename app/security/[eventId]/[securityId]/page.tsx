@@ -61,20 +61,20 @@ async function validateSecurityAccess(eventId: string, securityId: string) {
 
 function UnauthorizedAccess() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-12 h-12 bg-red-100 dark:bg-background rounded-full flex items-center justify-center mb-4">
             <AlertTriangle className="w-6 h-6 text-red-600" />
           </div>
           <CardTitle className="text-xl text-red-800">Access Denied</CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             You don't have permission to access this security verification
             portal.
           </p>
-          <div className="text-sm text-gray-500 space-y-2">
+          <div className="text-sm text-muted-foreground space-y-2">
             <p>This could be because:</p>
             <ul className="list-disc list-inside text-left space-y-1">
               <li>You're not assigned as a security officer for this event</li>
@@ -83,7 +83,7 @@ function UnauthorizedAccess() {
               <li>The event has ended or been cancelled</li>
             </ul>
           </div>
-          <p className="text-sm text-gray-600 mt-4">
+          <p className="text-sm text-muted-foreground mt-4">
             Please contact the event organizer if you believe this is an error.
           </p>
         </CardContent>
@@ -113,10 +113,10 @@ export default async function SecurityVerificationPage(
   // Check if event is still active (not cancelled or completed)
   if (securityData.event.status === "CANCELLED") {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+            <div className="mx-auto w-12 h-12 bg-yellow-100 dark:bg-background rounded-full flex items-center justify-center mb-4">
               <AlertTriangle className="w-6 h-6 text-yellow-600" />
             </div>
             <CardTitle className="text-xl text-yellow-800">
@@ -124,10 +124,10 @@ export default async function SecurityVerificationPage(
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               The event "{securityData.event.title}" has been cancelled.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Ticket verification is no longer available for this event.
             </p>
           </CardContent>

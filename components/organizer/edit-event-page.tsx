@@ -28,8 +28,10 @@ import { toast } from "sonner";
 const eventSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  date: z.string().min(1, "Date is required"),
-  time: z.string().min(1, "Time is required"),
+  date: z.string().min(1, "Start date is required"),
+  endDate: z.string().min(1, "End date is required"),
+  time: z.string().min(1, "Start time is required"),
+  endTime: z.string().min(1, "End time is required"),
   location: z.string().min(1, "Location is required"),
   category: z.string().min(1, "Category is required"),
   price: z.number().min(0, "Price must be 0 or greater"),
@@ -67,18 +69,20 @@ export function EditEventPage({ eventId }: EditEventPageProps) {
   // Populate form with existing event data
   useEffect(() => {
     if (event) {
-      const eventDate = new Date(event.startDate);
+      const startDate = new Date(event.startDate);
+      const endDate = new Date(event.endDate);
       reset({
         title: event.title,
         description: event.description ?? "",
-        date: eventDate.toISOString().split("T")[0],
-        time: eventDate.toTimeString().slice(0, 5),
+        date: startDate.toISOString().split("T")[0],
+        endDate: endDate.toISOString().split("T")[0],
+        time: startDate.toTimeString().slice(0, 5),
+        endTime: endDate.toTimeString().slice(0, 5),
         location: event.location,
         category: event.category,
         price: event.price,
         totalTickets: event.totalTickets,
         image: event?.mainImage || "",
-        // Use the actual image URLs from event.images for gallery preview
         gallery: event?.images?.map((img) => img.url) || [],
       });
     }
@@ -88,10 +92,16 @@ export function EditEventPage({ eventId }: EditEventPageProps) {
     setIsSubmitting(true);
     try {
       // Prepare only valid fields for Prisma
-      const { date, time, image, gallery, ...rest } = data;
+      const { date, endDate, time, endTime, image, gallery, ...rest } = data;
+
+      // Combine date and time for proper DateTime objects
+      const startDateTime = new Date(`${data.date}T${data.time}:00`);
+      const endDateTime = new Date(`${data.endDate}T${data.endTime}:00`);
+
       const updateData: any = {
         ...rest,
-        startDate: new Date(`${data.date}T${data.time}`).toISOString(),
+        startDate: startDateTime.toISOString(),
+        endDate: endDateTime.toISOString(),
         mainImage: image,
         images: gallery ? gallery.map((url) => ({ url })) : undefined,
       };
@@ -184,7 +194,7 @@ export function EditEventPage({ eventId }: EditEventPageProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="date">Date</Label>
+                    <Label htmlFor="date">Start Date</Label>
                     <Input id="date" type="date" {...register("date")} />
                     {errors.date && (
                       <p className="text-sm text-destructive mt-1">
@@ -194,11 +204,33 @@ export function EditEventPage({ eventId }: EditEventPageProps) {
                   </div>
 
                   <div>
-                    <Label htmlFor="time">Time</Label>
+                    <Label htmlFor="time">Start Time</Label>
                     <Input id="time" type="time" {...register("time")} />
                     {errors.time && (
                       <p className="text-sm text-destructive mt-1">
                         {errors.time.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="endDate">End Date</Label>
+                    <Input id="endDate" type="date" {...register("endDate")} />
+                    {errors.endDate && (
+                      <p className="text-sm text-destructive mt-1">
+                        {errors.endDate.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="endTime">End Time</Label>
+                    <Input id="endTime" type="time" {...register("endTime")} />
+                    {errors.endTime && (
+                      <p className="text-sm text-destructive mt-1">
+                        {errors.endTime.message}
                       </p>
                     )}
                   </div>
@@ -228,16 +260,16 @@ export function EditEventPage({ eventId }: EditEventPageProps) {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Music">Music</SelectItem>
-                      <SelectItem value="Sports">Sports</SelectItem>
-                      <SelectItem value="Technology">Technology</SelectItem>
-                      <SelectItem value="Business">Business</SelectItem>
-                      <SelectItem value="Arts & Culture">
-                        Arts & Culture
-                      </SelectItem>
-                      <SelectItem value="Food & Drink">Food & Drink</SelectItem>
-                      <SelectItem value="Education">Education</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem value="conference">Conference</SelectItem>
+                      <SelectItem value="workshop">Workshop</SelectItem>
+                      <SelectItem value="seminar">Seminar</SelectItem>
+                      <SelectItem value="networking">Networking</SelectItem>
+                      <SelectItem value="concert">Concert</SelectItem>
+                      <SelectItem value="festival">Festival</SelectItem>
+                      <SelectItem value="exhibition">Exhibition</SelectItem>
+                      <SelectItem value="sports">Sports</SelectItem>
+                      <SelectItem value="charity">Charity</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.category && (

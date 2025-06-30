@@ -22,20 +22,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { useUser, useUpdateUser, useUpdatePassword } from "@/lib/services";
+import { useCurrentUser, useUpdatePassword } from "@/lib/api/users";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 interface ProfilePageProps {
   userId: string;
 }
 
 export function ProfilePage({ userId }: ProfilePageProps) {
-  const { data: user, isLoading } = useUser(userId);
-  const updateUserMutation = useUpdateUser();
+  const { data: user, isLoading, refetch } = useCurrentUser();
   const updatePasswordMutation = useUpdatePassword();
   const { toast } = useToast();
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -51,6 +53,9 @@ export function ProfilePage({ userId }: ProfilePageProps) {
     newPassword: "",
     confirmPassword: "",
   });
+
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Update form data when user data loads
   React.useEffect(() => {
@@ -82,18 +87,27 @@ export function ProfilePage({ userId }: ProfilePageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsUpdating(true);
 
     try {
-      await updateUserMutation.mutateAsync({
-        id: userId,
-        data: {
+      const response = await fetch("/api/users/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           ...formData,
           birthday: formData.birthday
             ? new Date(formData.birthday).toISOString()
-            : undefined,
-        },
+            : null,
+        }),
       });
 
+      if (!response.ok) {
+        throw new Error("Failed to update profile");
+      }
+
+      await refetch();
       toast({
         title: "Profile updated",
         description: "Your profile has been updated successfully",
@@ -104,6 +118,8 @@ export function ProfilePage({ userId }: ProfilePageProps) {
         description: "Failed to update profile",
         variant: "destructive",
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -141,6 +157,45 @@ export function ProfilePage({ userId }: ProfilePageProps) {
         description: "Failed to update password",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (
+      !confirm(
+        "Are you absolutely sure you want to delete your account? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch("/api/users/delete-account", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete account");
+      }
+
+      toast({
+        title: "Account deleted",
+        description: "Your account has been successfully deleted",
+      });
+
+      // Sign out and redirect to home page
+      await signOut({ redirect: false });
+      router.push("/");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -270,8 +325,8 @@ export function ProfilePage({ userId }: ProfilePageProps) {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button type="submit" disabled={updateUserMutation.isPending}>
-                  {updateUserMutation.isPending ? (
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Saving...
@@ -286,66 +341,104 @@ export function ProfilePage({ userId }: ProfilePageProps) {
         </TabsContent>
 
         <TabsContent value="security">
-          <Card>
-            <form onSubmit={handlePasswordSubmit}>
+          <div className="space-y-6">
+            <Card>
+              <form onSubmit={handlePasswordSubmit}>
+                <CardHeader>
+                  <CardTitle>Security Settings</CardTitle>
+                  <CardDescription>
+                    Update your password and security preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="current-password">Current Password</Label>
+                    <Input
+                      id="current-password"
+                      type="password"
+                      value={passwordData.currentPassword}
+                      onChange={(e) =>
+                        handlePasswordChange("currentPassword", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={(e) =>
+                        handlePasswordChange("newPassword", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">
+                      Confirm New Password
+                    </Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) =>
+                        handlePasswordChange("confirmPassword", e.target.value)
+                      }
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button
+                    type="submit"
+                    disabled={updatePasswordMutation.isPending}
+                  >
+                    {updatePasswordMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      "Update Password"
+                    )}
+                  </Button>
+                </CardFooter>
+              </form>
+            </Card>
+
+            <Card className="border-red-200">
               <CardHeader>
-                <CardTitle>Security Settings</CardTitle>
+                <CardTitle className="text-red-600">Danger Zone</CardTitle>
                 <CardDescription>
-                  Update your password and security preferences
+                  Irreversible and destructive actions
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="current-password">Current Password</Label>
-                  <Input
-                    id="current-password"
-                    type="password"
-                    value={passwordData.currentPassword}
-                    onChange={(e) =>
-                      handlePasswordChange("currentPassword", e.target.value)
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-password">New Password</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    value={passwordData.newPassword}
-                    onChange={(e) =>
-                      handlePasswordChange("newPassword", e.target.value)
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm New Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={(e) =>
-                      handlePasswordChange("confirmPassword", e.target.value)
-                    }
-                  />
+              <CardContent>
+                <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
+                  <div>
+                    <h4 className="font-medium text-red-900">Delete Account</h4>
+                    <p className="text-sm text-red-700">
+                      Permanently delete your account and all associated data
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      "Delete Account"
+                    )}
+                  </Button>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button
-                  type="submit"
-                  disabled={updatePasswordMutation.isPending}
-                >
-                  {updatePasswordMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Password"
-                  )}
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="preferences">

@@ -40,9 +40,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Loader2 } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export function SettingsPage() {
   const { toast } = useToast();
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -72,13 +77,35 @@ export function SettingsPage() {
     });
   };
 
-  const handleDeleteAccount = () => {
-    // In a real app, this would call an API to delete the account
-    toast({
-      title: "Account deletion requested",
-      description: "We'll process your request within 24 hours",
-      variant: "destructive",
-    });
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch("/api/users/delete-account", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete account");
+      }
+
+      toast({
+        title: "Account deleted",
+        description: "Your account has been successfully deleted",
+      });
+
+      // Sign out and redirect to home page
+      await signOut({ redirect: false });
+      router.push("/");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -431,9 +458,22 @@ export function SettingsPage() {
                   </div>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Account
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Account
+                          </>
+                        )}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>

@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   }
 
   const token = crypto.randomBytes(32).toString("hex");
-  const expiry = new Date(Date.now() + 3 * 60 * 1000);
+  const expiry = new Date(Date.now() + 15 * 60 * 1000);
 
   await prisma.user.update({
     where: { email },

@@ -1,20 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
     const aboutData = await prisma.about.findFirst({
       include: {
         teamMembers: {
-          orderBy: { order: 'asc' }
-        }
-      }
-    })
+          orderBy: { order: "asc" },
+        },
+      },
+    });
 
     if (!aboutData) {
-      const now = new Date()
+      const now = new Date();
 
       const placeholder = {
         id: "about-placeholder-id",
@@ -26,9 +26,17 @@ export async function GET(request: NextRequest) {
         teamSize: 3,
         eventsHosted: 120,
         happyCustomers: 3500,
-        values: ["Innovation", "Creativity", "Community", "Excellence", "Integrity", "Accessibility", "Growth"],
+        values: [
+          "Innovation",
+          "Creativity",
+          "Community",
+          "Excellence",
+          "Integrity",
+          "Accessibility",
+          "Growth",
+        ],
         contactEmail: "contact@placeholder.com",
-        contactPhone: "+233 000 000 000",
+        contactPhone: "+233 59 834 6928",
         contactWebsite: "https://placeholder.com",
         createdAt: now,
         updatedAt: now,
@@ -37,38 +45,42 @@ export async function GET(request: NextRequest) {
             id: "member-1",
             name: "Masood Acheampong",
             role: "CEO & CTO",
-            image: "https://res.cloudinary.com/dggaqzud0/image/upload/v1749889611/qrgate/events/ctlzalwgbcz1aodfxxir.jpg",
+            image:
+              "https://res.cloudinary.com/dggaqzud0/image/upload/v1749889611/qrgate/events/ctlzalwgbcz1aodfxxir.jpg",
             bio: "Masood is the visionary behind the company.",
             order: 1,
-            aboutId: "about-placeholder-id"
+            aboutId: "about-placeholder-id",
           },
           {
             id: "member-2",
             name: "Edwin Kofi Nyarkoh",
             role: "CTO",
-            image: "https://res.cloudinary.com/dggaqzud0/image/upload/v1749889611/qrgate/events/ctlzalwgbcz1aodfxxir.jpg",
+            image:
+              "https://res.cloudinary.com/dggaqzud0/image/upload/v1749889611/qrgate/events/ctlzalwgbcz1aodfxxir.jpg",
             bio: "Edwin leads the tech team with passion.",
             order: 2,
-            aboutId: "about-placeholder-id"
+            aboutId: "about-placeholder-id",
           },
           {
             id: "member-3",
             name: "Kojo Antwi",
             role: "Design Lead",
-            image: "https://res.cloudinary.com/dggaqzud0/image/upload/v1749889611/qrgate/events/ctlzalwgbcz1aodfxxir.jpg",
+            image:
+              "https://res.cloudinary.com/dggaqzud0/image/upload/v1749889611/qrgate/events/ctlzalwgbcz1aodfxxir.jpg",
             bio: "Kojo brings ideas to life visually.",
             order: 3,
-            aboutId: "about-placeholder-id"
-          }
-        ]
-      }
+            aboutId: "about-placeholder-id",
+          },
+        ],
+      };
 
       return NextResponse.json(placeholder, {
         status: 200,
         headers: {
-          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
-        }
-      })
+          "Cache-Control":
+            "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      });
     }
 
     const response = {
@@ -87,28 +99,28 @@ export async function GET(request: NextRequest) {
       contactWebsite: aboutData.contactWebsite,
       createdAt: aboutData.createdAt,
       updatedAt: aboutData.updatedAt,
-      teamMembers: aboutData.teamMembers.map(member => ({
+      teamMembers: aboutData.teamMembers.map((member) => ({
         id: member.id,
         name: member.name,
         role: member.role,
         image: member.image,
         bio: member.bio,
         order: member.order,
-        aboutId: member.aboutId
-      }))
-    }
+        aboutId: member.aboutId,
+      })),
+    };
 
     return NextResponse.json(response, {
       status: 200,
       headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
-      }
-    })
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    });
   } catch (error) {
-    console.error('Error fetching about data:', error)
+    console.error("Error fetching about data:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
-    )
+    );
   }
 }

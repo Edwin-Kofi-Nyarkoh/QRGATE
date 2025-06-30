@@ -51,14 +51,16 @@ const statusOptions = [
 ];
 const categoryOptions = [
   "All Categories",
-  "Music",
-  "Sports",
-  "Technology",
-  "Business",
-  "Arts & Culture",
-  "Food & Drink",
-  "Education",
-  "Other",
+  "conference",
+  "workshop",
+  "seminar",
+  "networking",
+  "concert",
+  "festival",
+  "exhibition",
+  "sports",
+  "charity",
+  "other",
 ];
 
 export function EventListPage() {

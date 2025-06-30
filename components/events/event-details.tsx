@@ -6,24 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  Share2,
-  User,
-  Users,
-  Plus,
-  Minus,
-} from "lucide-react";
+import { Calendar, Clock, MapPin, Share2, User, Users } from "lucide-react";
 import { EventCountdown } from "@/components/events/event-countdown";
 import { formatDate, formatTime } from "@/lib/date-utils";
 import { ImageGallery } from "@/components/events/image-gallery";
 import { BuyNowButton } from "@/components/events/buy-now-button";
 import { useCartStore } from "@/lib/store/cart-store";
 import { toast } from "sonner";
-// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-// import { Label } from "@/components/ui/label";
 import { TicketTypeSelector } from "@/components/ui/ticket-type-selector";
 
 interface EventDetailsProps {
@@ -94,8 +83,16 @@ export function EventDetails({ event }: EventDetailsProps) {
     },
   ];
 
-  console.log("Ticket Types:", event);
-
+  // Compute event status for countdown
+  const now = new Date();
+  const start = new Date(event.startDate);
+  const end = new Date(event.endDate);
+  let eventStatus: "upcoming" | "live" | "ended" = "upcoming";
+  if (now >= start && now <= end) {
+    eventStatus = "live";
+  } else if (now > end) {
+    eventStatus = "ended";
+  }
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid md:grid-cols-3 gap-8">
@@ -156,8 +153,7 @@ export function EventDetails({ event }: EventDetailsProps) {
                   width="100%"
                   height="100%"
                   frameBorder="0"
-                  src={`https://www.google.com/maps/embed/v1/view
-  ?key=${process.env.GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(
+                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyB5UXqcb2fcnW_6WeOTI4Qm7yPGpTUbhs4&q=${encodeURIComponent(
                     event.location
                   )}`}
                   referrerPolicy="no-referrer-when-downgrade"
@@ -173,7 +169,13 @@ export function EventDetails({ event }: EventDetailsProps) {
         <div>
           <Card>
             <CardContent className="p-6 space-y-6">
-              <EventCountdown date={new Date(event.startDate)} />
+              {/* Event Status and Countdown */}
+              <div className="mb-2 flex flex-col items-center gap-1">
+                <EventCountdown
+                  startDate={new Date(event.startDate)}
+                  endDate={new Date(event.endDate)}
+                />
+              </div>
 
               {/* Ticket Type Selection */}
               <TicketTypeSelector
@@ -225,15 +227,14 @@ export function EventDetails({ event }: EventDetailsProps) {
                   {isInCart ? "Already in Cart" : "Add to Cart"}
                 </Button>
                 <BuyNowButton
-                  eventId={event.id}
-                  price={ticketType.price}
-                  ticketTypeId={ticketType.id}
+                  event={event}
+                  ticketType={ticketType}
                   quantity={quantity}
                   disabled={availableTickets <= 0}
                 />
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full bg-transparent"
                   onClick={handleShare}
                 >
                   <Share2 className="w-4 h-4 mr-2" />

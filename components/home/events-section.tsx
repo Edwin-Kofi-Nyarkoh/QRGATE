@@ -16,13 +16,6 @@ import { formatDate } from "@/lib/date-utils";
 import { useCartStore } from "@/lib/store/cart-store";
 import type { Event } from "@/lib/types/api";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { TicketTypeSelector } from "@/components/ui/ticket-type-selector";
 import { EventsPageSkeleton } from "../events/events-page-skeleton";
 
@@ -70,14 +63,14 @@ export function EventsSection() {
                 <Calendar className="w-6 h-6" />
                 Upcoming Events
               </h2>
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <Button variant="outline" size="sm">
                   LIST VIEW
                 </Button>
                 <Button variant="outline" size="sm">
                   GRID VIEW
                 </Button>
-              </div>
+              </div> */}
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">

@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { transporter } from "@/lib/email/nodemailer";
+import { registrationConfirmationEmail } from "@/lib/email/email-templates";
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +43,14 @@ export async function POST(request: NextRequest) {
         isOrganizer: true,
         createdAt: true,
       },
+    });
+
+    // Send welcome email (optional)
+    await transporter.sendMail({
+      from: `"QRGATE" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Welcome to QRGATE!",
+      html: registrationConfirmationEmail({ name }),
     });
 
     return NextResponse.json(user, { status: 201 });

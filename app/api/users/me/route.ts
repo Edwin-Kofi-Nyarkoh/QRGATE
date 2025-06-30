@@ -48,3 +48,48 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { name, phone, address, gender, birthday, profileImage } = body;
+
+    const user = await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        name,
+        phone,
+        address,
+        gender,
+        birthday: birthday ? new Date(birthday) : null,
+        profileImage,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        address: true,
+        gender: true,
+        birthday: true,
+        role: true,
+        isOrganizer: true,
+        profileImage: true,
+        updatedAt: true,
+      },
+    });
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return NextResponse.json(
+      { error: "Failed to update user" },
+      { status: 500 }
+    );
+  }
+}
