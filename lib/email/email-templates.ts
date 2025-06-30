@@ -8,15 +8,15 @@ export function QrGateEmailTemplate({
 }) {
   // Use a public CDN fallback for logo
   const logoUrl = `${
-    process.env.NEXT_PUBLIC_APP_URL
-      ? "c:\\Users\\masoo\\Downloads\\Telegram Desktop\\UI's and Logo Components & Assets\\uilogos-v2.0\\uilogos-v2.0\\uilogos-2.0\\logomark\\png\\muzica.png"
-      : "c:\\Users\\masoo\\Downloads\\Telegram Desktop\\UI's and Logo Components & Assets\\uilogos-v2.0\\uilogos-v2.0\\uilogos-2.0\\logomark\\png\\muzica.png"
+    process.env.NEXT_PUBLIC_APP_LOGO
+      ? "https://res.cloudinary.com/farzel-photos/image/upload/v1751317948/muzica_ry4x7o.png"
+      : "https://res.cloudinary.com/farzel-photos/image/upload/v1751317948/muzica_ry4x7o.png"
   }/logo.png`;
   return `
     <div style="background:hsl(0,0%,100%);padding:32px 0;font-family:Inter,Arial,Helvetica,sans-serif;min-height:100vh;">
       <div style="max-width:480px;margin:0 auto;background:hsl(0,0%,100%);border-radius:12px;box-shadow:0 2px 16px rgba(0,0,0,0.04);overflow:hidden;">
         <div style="padding:32px 32px 16px 32px;text-align:center;">
-          <img src='${logoUrl}' alt="QRGATE Logo" style="width:64px;height:64px;border-radius:50%;margin-bottom:16px;object-fit:cover;background:#f1f5f9;display:inline-block;" onerror="this.onerror=null;this.src='c:\\Users\\masoo\\Downloads\\Telegram Desktop\\UI's and Logo Components & Assets\\uilogos-v2.0\\uilogos-v2.0\\uilogos-2.0\\logomark\\png\\muzica.png'" />
+          <img src='${logoUrl}' alt="QRGATE Logo" style="width:64px;height:64px;border-radius:50%;margin-bottom:16px;object-fit:cover;background:#f1f5f9;display:inline-block;" onerror="this.onerror=null;this.src='https://res.cloudinary.com/farzel-photos/image/upload/v1751317948/muzica_ry4x7o.png'" />
           <h1 style="font-size:1.5rem;font-weight:700;color:hsl(240,10%,3.9%);margin-bottom:8px;">${title}</h1>
         </div>
         <div style="padding:0 32px 32px 32px;font-size:1rem;color:hsl(240,10%,3.9%);">
