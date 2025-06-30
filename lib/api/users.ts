@@ -29,6 +29,15 @@ export const usersApi = {
   }): Promise<void> => {
     return apiPost<void>("/users/change-password", data);
   },
+
+  deleteAccount: async (): Promise<void> => {
+    const response = await fetch("/api/users/delete-account", {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete account");
+    }
+  },
 };
 
 // Query keys
@@ -51,14 +60,6 @@ export const useUser = (
     ...options,
   });
 };
-
-// export const useCurrentUserMe = ({ userId }: { userId?: string }) => {
-//   return useQuery({
-//     queryKey: ["userMe"],
-//     queryFn: () => usersApi.getCurrentUser(),
-//     enabled: !!userId,
-//   });
-// };
 
 export const useCurrentUser = (
   options?: Omit<UseQueryOptions<User>, "queryKey" | "queryFn">
@@ -87,5 +88,11 @@ export const useUpdateUser = () => {
 export const useUpdatePassword = () => {
   return useMutation({
     mutationFn: usersApi.updatePassword,
+  });
+};
+
+export const useDeleteAccount = () => {
+  return useMutation({
+    mutationFn: usersApi.deleteAccount,
   });
 };

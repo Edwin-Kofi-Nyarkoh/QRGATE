@@ -19,7 +19,7 @@ export function OrganizerHeader() {
   const { setOpen } = useSidebarToggle();
 
   return (
-    <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 bg-card border-b border-border sticky top-0 z-30">
+    <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 bg-card border-b border-border sticky top-0 z-20">
       <div className="flex items-center min-w-0 gap-2">
         {/* Mobile menu button */}
         <Button
@@ -37,9 +37,9 @@ export function OrganizerHeader() {
       </div>
 
       <div className="flex items-center space-x-2 md:space-x-4">
-        {/* <Button variant="ghost" size="icon" className="text-muted-foreground">
+        <Button variant="ghost" size="icon" className="text-muted-foreground">
           <Bell className="w-5 h-5" />
-        </Button> */}
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
