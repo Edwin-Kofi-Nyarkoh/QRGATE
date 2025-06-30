@@ -102,7 +102,6 @@ export function EventDetails({ event }: EventDetailsProps) {
   } else if (now > end) {
     eventStatus = "ended";
   }
-
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid md:grid-cols-3 gap-8">
@@ -163,10 +162,9 @@ export function EventDetails({ event }: EventDetailsProps) {
                   width="100%"
                   height="100%"
                   frameBorder="0"
-                  src={`https://www.google.com/maps/embed/v1/view
-  ?key=${process.env.GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(
-                    event.location
-                  )}`}
+                  src={`https://www.google.com/maps/embed/v1/place?key=${
+                    process.env.GOOGLE_MAPS_API_KEY
+                  }&q=${encodeURIComponent(event.location)}`}
                   referrerPolicy="no-referrer-when-downgrade"
                   allowFullScreen
                 ></iframe>
@@ -180,11 +178,12 @@ export function EventDetails({ event }: EventDetailsProps) {
         <div>
           <Card>
             <CardContent className="p-6 space-y-6">
-              {/* Ticket Type Selection */}
-              <div className="mb-2">
+              {/* Event Status and Countdown */}
+              <div className="mb-2 flex flex-col items-center gap-1">
                 <EventCountdown date={start} status={eventStatus} />
               </div>
 
+              {/* Ticket Type Selection */}
               <TicketTypeSelector
                 ticketTypes={ticketTypes}
                 onSelect={handleTicketSelect}

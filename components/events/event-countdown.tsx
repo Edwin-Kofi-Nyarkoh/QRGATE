@@ -38,23 +38,27 @@ export function EventCountdown({ date, status }: CountdownProps) {
     return () => clearInterval(timer);
   }, [date]);
 
-  if (status === "live") {
-    return (
-      <div className="text-green-600 font-bold text-lg text-center">Live</div>
-    );
-  }
-  if (status === "ended") {
-    return (
-      <div className="text-red-600 font-bold text-lg text-center">Ended</div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-4 gap-2 text-center">
-      <CountdownItem value={timeLeft.days} label="DAYS" />
-      <CountdownItem value={timeLeft.hours} label="HOURS" />
-      <CountdownItem value={timeLeft.minutes} label="MINS" />
-      <CountdownItem value={timeLeft.seconds} label="SECS" />
+    <div className="flex flex-col items-center gap-1">
+      {status && (
+        <span
+          className={
+            status === "live"
+              ? "text-green-600 font-bold text-lg"
+              : status === "ended"
+              ? "text-red-600 font-bold text-lg"
+              : "text-blue-600 font-bold text-lg"
+          }
+        >
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </span>
+      )}
+      <div className="grid grid-cols-4 gap-2 text-center">
+        <CountdownItem value={timeLeft.days} label="DAYS" />
+        <CountdownItem value={timeLeft.hours} label="HOURS" />
+        <CountdownItem value={timeLeft.minutes} label="MINS" />
+        <CountdownItem value={timeLeft.seconds} label="SECS" />
+      </div>
     </div>
   );
 }
