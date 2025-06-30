@@ -18,16 +18,26 @@ type SendTicketEmailOptions = {
     startDate: Date;
     endDate: Date;
   };
+  attachments?: any[];
 };
 
-export async function sendTicketEmail({ user, tickets, event }: SendTicketEmailOptions) {
+export async function sendTicketEmail({
+  user,
+  tickets,
+  event,
+  attachments,
+}: SendTicketEmailOptions) {
   const ticketImagesHtml = tickets
     .map(
       (ticket, index) => `
         <div style="margin-bottom: 20px; text-align: center;">
           <p style="font-weight: bold;">Ticket ${index + 1} - ${ticket.type}</p>
-          <img src="${ticket.qrCode}" alt="QR Code" style="width: 200px; height: 200px;" />
-          <p style="margin-top: 8px; color: #444;">Price: $${ticket.price.toFixed(2)}</p>
+          <img src="${
+            ticket.qrCode
+          }" alt="QR Code" style="width: 200px; height: 200px;" />
+          <p style="margin-top: 8px; color: #444;">Price: $${ticket.price.toFixed(
+            2
+          )}</p>
         </div>
       `
     )
@@ -52,7 +62,9 @@ export async function sendTicketEmail({ user, tickets, event }: SendTicketEmailO
             <p>Thank you for your purchase. Below are your tickets for:</p>
             <h3 style="color: #003566;">${event.title}</h3>
             <p><strong>Location:</strong> ${event.location}</p>
-            <p><strong>Date:</strong> ${sameDay ? formattedStart : `${formattedStart} — ${formattedEnd}`}</p>
+            <p><strong>Date:</strong> ${
+              sameDay ? formattedStart : `${formattedStart} — ${formattedEnd}`
+            }</p>
             <div style="margin-top: 20px;">
               ${ticketImagesHtml}
             </div>
@@ -64,6 +76,7 @@ export async function sendTicketEmail({ user, tickets, event }: SendTicketEmailO
         </div>
       </div>
     `,
+    attachments: attachments || [],
   };
 
   await transporter.sendMail(mailOptions);

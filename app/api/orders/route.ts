@@ -88,7 +88,10 @@ export async function POST(request: NextRequest) {
       const { eventId, quantity = 1, ticketTypeId, ticketType, price } = item;
 
       if (!eventId) {
-        return NextResponse.json({ error: "Missing eventId in item" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Missing eventId in item" },
+          { status: 400 }
+        );
       }
 
       const event = await prisma.event.findUnique({
@@ -104,12 +107,19 @@ export async function POST(request: NextRequest) {
 
       let ticketTypeObj;
       if (ticketTypeId) {
-        ticketTypeObj = event.ticketTypes.find((type) => type.id === ticketTypeId);
+        ticketTypeObj = event.ticketTypes.find(
+          (type) => type.id === ticketTypeId
+        );
         if (!ticketTypeObj) {
-          return NextResponse.json({ error: "Ticket type not found" }, { status: 404 });
+          return NextResponse.json(
+            { error: "Ticket type not found" },
+            { status: 404 }
+          );
         }
       } else if (ticketType) {
-        ticketTypeObj = event.ticketTypes.find((type) => type.name === ticketType);
+        ticketTypeObj = event.ticketTypes.find(
+          (type) => type.name === ticketType
+        );
       } else {
         ticketTypeObj = event.ticketTypes[0];
       }
@@ -129,7 +139,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const orderTotal = price ? price * quantity : ticketTypeObj.price * quantity;
+      const orderTotal = price
+        ? price * quantity
+        : ticketTypeObj.price * quantity;
 
       const order = await prisma.order.create({
         data: {
@@ -169,13 +181,25 @@ export async function POST(request: NextRequest) {
       });
 
       // ✉️ Send email once with all QR codes
+      // Attach QR codes as images for better email compatibility
+      const attachments = ticketsToCreate.map((t, idx) => {
+        // Extract base64 from data URL
+        const base64 = t.qrCode.split(",")[1];
+        return {
+          filename: `ticket-${idx + 1}.png`,
+          content: base64,
+          encoding: "base64",
+          cid: `qrcode${idx + 1}@tickets.qrgate.app`,
+        };
+      });
+
       await sendTicketEmail({
         user: {
           name: session.user.name ?? null,
           email: session.user.email!,
         },
-        tickets: ticketsToCreate.map((t) => ({
-          qrCode: t.qrCode,
+        tickets: ticketsToCreate.map((t, idx) => ({
+          qrCode: `cid:qrcode${idx + 1}@tickets.qrgate.app`,
           type: t.type,
           price: t.price,
         })),
@@ -185,6 +209,7 @@ export async function POST(request: NextRequest) {
           startDate: order.event.startDate,
           endDate: order.event.endDate,
         },
+        attachments,
       });
 
       await prisma.ticketType.update({
