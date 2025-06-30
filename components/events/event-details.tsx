@@ -162,9 +162,9 @@ export function EventDetails({ event }: EventDetailsProps) {
                   width="100%"
                   height="100%"
                   frameBorder="0"
-                  src={`https://www.google.com/maps/embed/v1/place?key=${
-                    process.env.GOOGLE_MAPS_API_KEY
-                  }&q=${encodeURIComponent(event.location)}`}
+                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyB5UXqcb2fcnW_6WeOTI4Qm7yPGpTUbhs4&q=${encodeURIComponent(
+                    event.location
+                  )}`}
                   referrerPolicy="no-referrer-when-downgrade"
                   allowFullScreen
                 ></iframe>
@@ -233,9 +233,8 @@ export function EventDetails({ event }: EventDetailsProps) {
                   {isInCart ? "Already in Cart" : "Add to Cart"}
                 </Button>
                 <BuyNowButton
-                  eventId={event.id}
-                  price={ticketType.price}
-                  ticketTypeId={ticketType.id}
+                  event={event}
+                  ticketType={ticketType}
                   quantity={quantity}
                   disabled={availableTickets <= 0}
                 />
