@@ -88,7 +88,10 @@ export async function POST(request: NextRequest) {
       const { eventId, quantity = 1, ticketTypeId, ticketType, price } = item;
 
       if (!eventId) {
-        return NextResponse.json({ error: "Missing eventId in item" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Missing eventId in item" },
+          { status: 400 }
+        );
       }
 
       const event = await prisma.event.findUnique({
@@ -104,12 +107,19 @@ export async function POST(request: NextRequest) {
 
       let ticketTypeObj;
       if (ticketTypeId) {
-        ticketTypeObj = event.ticketTypes.find((type) => type.id === ticketTypeId);
+        ticketTypeObj = event.ticketTypes.find(
+          (type) => type.id === ticketTypeId
+        );
         if (!ticketTypeObj) {
-          return NextResponse.json({ error: "Ticket type not found" }, { status: 404 });
+          return NextResponse.json(
+            { error: "Ticket type not found" },
+            { status: 404 }
+          );
         }
       } else if (ticketType) {
-        ticketTypeObj = event.ticketTypes.find((type) => type.name === ticketType);
+        ticketTypeObj = event.ticketTypes.find(
+          (type) => type.name === ticketType
+        );
       } else {
         ticketTypeObj = event.ticketTypes[0];
       }
@@ -129,7 +139,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const orderTotal = price ? price * quantity : ticketTypeObj.price * quantity;
+      const orderTotal = price
+        ? price * quantity
+        : ticketTypeObj.price * quantity;
 
       const order = await prisma.order.create({
         data: {
