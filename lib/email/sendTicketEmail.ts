@@ -35,7 +35,7 @@ export async function sendTicketEmail({
           <img src="${
             ticket.qrCode
           }" alt="QR Code" style="width: 200px; height: 200px;" />
-          <p style="margin-top: 8px; color: #444;">Price: $${ticket.price.toFixed(
+          <p style="margin-top: 8px; color: #444;">Price: Ghc${ticket.price.toFixed(
             2
           )}</p>
         </div>
