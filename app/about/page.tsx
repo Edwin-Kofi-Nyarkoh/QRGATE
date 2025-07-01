@@ -61,9 +61,12 @@ export default function AboutPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center mb-12">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">About Us</h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Connecting people through unforgettable experiences and events
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-primary">
+          About QRGATE
+        </h1>
+        <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto font-medium">
+          Empowering connections, one event at a time. Discover our story, our
+          team, and our mission to make every event unforgettable.
         </p>
       </div>
 
@@ -76,20 +79,24 @@ export default function AboutPage() {
       />
 
       {/* Hero Section */}
-      <AboutHero
-        story={aboutData?.story}
-        mission={aboutData?.mission}
-        vision={aboutData?.vision}
-      />
+      <div className="mb-16">
+        <AboutHero
+          story={aboutData?.story}
+          mission={aboutData?.mission}
+          vision={aboutData?.vision}
+        />
+      </div>
 
       {/* Team Section */}
-      <AboutTeam
-        teamMembers={aboutData?.teamMembers}
-        values={aboutData?.values}
-      />
+      <div className="mb-16">
+        <AboutTeam
+          teamMembers={aboutData?.teamMembers}
+          values={aboutData?.values}
+        />
+      </div>
 
       {/* Contact Section */}
-      <div className="mt-12">
+      <div className="mt-12 max-w-2xl mx-auto">
         <AboutContact
           contact={aboutData?.contact}
           location={aboutData?.location}
