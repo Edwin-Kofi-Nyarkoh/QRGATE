@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import MasoodImage from "@/public/masood.jpg";
 import EdwinImage from "@/public/edwin.jpg";
+import Mensah from "@/public/mensah.jpg";
 
 const prisma = new PrismaClient();
 
@@ -64,9 +65,8 @@ export async function GET(request: NextRequest) {
           {
             id: "member-3",
             name: "Kojo Antwi",
-            role: "Design Lead",
-            image:
-              "https://res.cloudinary.com/dggaqzud0/image/upload/v1749889611/qrgate/events/ctlzalwgbcz1aodfxxir.jpg",
+            role: "Frontend Developer",
+            image: Mensah,
             bio: "Kojo brings ideas to life visually.",
             order: 3,
             aboutId: "about-placeholder-id",
