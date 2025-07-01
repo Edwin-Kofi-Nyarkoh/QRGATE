@@ -32,13 +32,16 @@ import { Skeleton } from "../ui/skeleton";
 
 const categories = [
   "All Categories",
-  "Entertainment",
-  "Networking & Meetup",
-  "Education",
-  "Community & Charity",
-  "Seminars & Workshops",
-  "Sport",
-  "Exhibitions",
+  "conference",
+  "workshop",
+  "seminar",
+  "networking",
+  "concert",
+  "festival",
+  "exhibition",
+  "sports",
+  "charity",
+  "other",
 ];
 
 const statusOptions = ["All Status", "UPCOMING", "ONGOING", "COMPLETED"];
