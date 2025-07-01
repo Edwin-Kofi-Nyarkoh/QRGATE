@@ -18,7 +18,7 @@ export default async function DashboardLayout({
   return (
     <SidebarToggleProvider>
       <div className="flex flex-col min-h-screen bg-background">
-        <DashboardHeader />
+        {/* <DashboardHeader /> */}
         <div className="flex flex-1 min-h-0">
           <DashboardSidebar />
           <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 bg-background">
