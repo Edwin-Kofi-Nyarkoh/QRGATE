@@ -19,7 +19,7 @@ export function DashboardHeader() {
   const { setOpen } = useSidebarToggle();
 
   return (
-    <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 bg-card border-b border-border sticky top-0 z-20">
+    <header className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 bg-card border-b border-border sticky top-0 z-20 md:hidden">
       <div className="flex items-center min-w-0 gap-2">
         {/* Mobile menu button */}
         <Button
