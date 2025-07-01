@@ -177,10 +177,10 @@ export function EventsPage() {
               </SelectContent>
             </Select>
 
-            <Button type="submit" className=" hover:bg-primary">
+            {/* <Button type="submit" className=" hover:bg-primary">
               <Filter className="w-4 h-4 mr-2" />
               Apply Filters
-            </Button>
+            </Button> */}
           </div>
         </form>
       </div>
