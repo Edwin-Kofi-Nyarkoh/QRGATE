@@ -37,9 +37,9 @@ export async function GET(request: NextRequest) {
           "Accessibility",
           "Growth",
         ],
-        contactEmail: "contact@placeholder.com",
+        contactEmail: "contact@qrgates.vercel.app",
         contactPhone: "+233 59 834 6928",
-        contactWebsite: "https://placeholder.com",
+        contactWebsite: "https://qrgates.vercel.app",
         createdAt: now,
         updatedAt: now,
         teamMembers: [

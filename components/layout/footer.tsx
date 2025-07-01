@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import {
   Facebook,
   Twitter,
@@ -17,40 +17,40 @@ import {
   MapPin,
   ArrowUp,
   Send,
-} from "lucide-react"
-import Link from "next/link"
-import { useState } from "react"
-import { useMutation } from "@tanstack/react-query"
-import { apiPost } from "@/lib/services"
-import { toast } from "sonner"
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { apiPost } from "@/lib/services";
+import { toast } from "sonner";
 
 export function Footer() {
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState("");
 
   // Use the mutation hook at component level
   const newsletterMutation = useMutation({
     mutationFn: async (email: string) => {
-      return await apiPost("/newsletter", { email })
+      return await apiPost("/newsletter", { email });
     },
     onSuccess: () => {
-      toast.success("You've subscribed successfully!")
-      setEmail("") 
+      toast.success("You've subscribed successfully!");
+      setEmail("");
     },
     onError: () => {
-      toast.error("Subscription failed. Please try again.")
+      toast.error("Subscription failed. Please try again.");
     },
-  })
+  });
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault() 
+    e.preventDefault();
     if (email.trim()) {
-      newsletterMutation.mutate(email)
+      newsletterMutation.mutate(email);
     }
-  }
+  };
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <footer className="bg-slate-900 text-white">
@@ -72,13 +72,16 @@ export function Footer() {
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-white mb-2">QRGate</h2>
               <p className="text-gray-300 text-sm leading-relaxed">
-                Revolutionizing event management with cutting-edge QR technology. Create, manage, and track your events
-                seamlessly with our comprehensive platform.
+                Revolutionizing event management with cutting-edge QR
+                technology. Create, manage, and track your events seamlessly
+                with our comprehensive platform.
               </p>
             </div>
 
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg text-white mb-4">GET IN TOUCH</h3>
+              <h3 className="font-semibold text-lg text-white mb-4">
+                GET IN TOUCH
+              </h3>
               <div className="flex items-start gap-3 text-sm text-gray-300">
                 <MapPin className="w-4 h-4 mt-1 text-primary flex-shrink-0" />
                 <div>
@@ -88,13 +91,19 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-300">
                 <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                <Link href="tel:+233598346928" className="hover:text-white transition-colors">
+                <Link
+                  href="tel:+233598346928"
+                  className="hover:text-white transition-colors"
+                >
                   +233 59 834 6928
                 </Link>
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-300">
                 <Mail className="w-4 h-4 text-primary flex-shrink-0" />
-                <Link href="mailto:info@qrgates.me" className="hover:text-white transition-colors">
+                <Link
+                  href="mailto:info@qrgates.me"
+                  className="hover:text-white transition-colors"
+                >
                   info@qrgates.me
                 </Link>
               </div>
@@ -103,7 +112,9 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-lg text-white mb-4">QUICK LINKS</h3>
+            <h3 className="font-semibold text-lg text-white mb-4">
+              QUICK LINKS
+            </h3>
             <div className="space-y-3 text-sm">
               <Link
                 href="/about"
@@ -177,9 +188,12 @@ export function Footer() {
 
           {/* Newsletter */}
           <div className="lg:col-span-2 xl:col-span-1">
-            <h3 className="font-semibold text-lg text-white mb-4">STAY UPDATED</h3>
+            <h3 className="font-semibold text-lg text-white mb-4">
+              STAY UPDATED
+            </h3>
             <p className="text-sm text-gray-300 mb-4 leading-relaxed">
-              Subscribe to our newsletter and never miss out on the latest events, features, and exclusive offers.
+              Subscribe to our newsletter and never miss out on the latest
+              events, features, and exclusive offers.
             </p>
             <form onSubmit={handleNewsletterSubmit} className="space-y-3">
               <div className="relative">
@@ -221,18 +235,28 @@ export function Footer() {
         <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
           <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-gray-400">
             <p className="text-center sm:text-left">
-              © 2025 <span className="font-semibold text-white">QRGate</span>. All rights reserved.
+              © 2025 <span className="font-semibold text-white">QRGate</span>.
+              All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <Link href="/privacy" className="hover:text-white transition-colors">
+              <Link
+                href="/privacy"
+                className="hover:text-white transition-colors"
+              >
                 Privacy Policy
               </Link>
               <span className="text-slate-600">•</span>
-              <Link href="/terms" className="hover:text-white transition-colors">
+              <Link
+                href="/terms"
+                className="hover:text-white transition-colors"
+              >
                 Terms of Service
               </Link>
               <span className="text-slate-600">•</span>
-              <Link href="/cookies" className="hover:text-white transition-colors">
+              <Link
+                href="/cookies"
+                className="hover:text-white transition-colors"
+              >
                 Cookie Policy
               </Link>
             </div>
@@ -242,12 +266,36 @@ export function Footer() {
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-400 mr-2">Follow us:</span>
             {[
-              { Icon: Facebook, href: "https://facebook.com/qrgate", label: "Facebook" },
-              { Icon: Twitter, href: "https://twitter.com/qrgate", label: "Twitter" },
-              { Icon: Instagram, href: "https://instagram.com/qrgate", label: "Instagram" },
-              { Icon: Youtube, href: "https://youtube.com/qrgate", label: "YouTube" },
-              { Icon: Linkedin, href: "https://linkedin.com/company/qrgate", label: "LinkedIn" },
-              { Icon: Github, href: "https://github.com/qrgate", label: "GitHub" },
+              {
+                Icon: Facebook,
+                href: "https://facebook.com/qrgate",
+                label: "Facebook",
+              },
+              {
+                Icon: Twitter,
+                href: "https://twitter.com/qrgate",
+                label: "Twitter",
+              },
+              {
+                Icon: Instagram,
+                href: "https://instagram.com/qrgate",
+                label: "Instagram",
+              },
+              {
+                Icon: Youtube,
+                href: "https://youtube.com/qrgate",
+                label: "YouTube",
+              },
+              {
+                Icon: Linkedin,
+                href: "https://linkedin.com/company/qrgate",
+                label: "LinkedIn",
+              },
+              {
+                Icon: Github,
+                href: "https://github.com/qrgate",
+                label: "GitHub",
+              },
             ].map(({ Icon, href, label }, index) => (
               <Button
                 key={index}
@@ -256,7 +304,12 @@ export function Footer() {
                 asChild
                 className="text-gray-400 hover:text-white hover:bg-slate-700 transition-all duration-200 hover:scale-110"
               >
-                <Link href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+                <Link
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                >
                   <Icon className="w-4 h-4" />
                 </Link>
               </Button>
@@ -267,11 +320,12 @@ export function Footer() {
         {/* Developer Credit */}
         <div className="mt-6 pt-6 border-t border-slate-700">
           <p className="text-center text-xs text-gray-500">
-            Crafted with ❤️ by the <span className="font-semibold text-gray-400">QRGate Team</span> • Powered by Next.js
-            & Tailwind CSS
+            Crafted with ❤️ by the{" "}
+            <span className="font-semibold text-gray-400">QRGate Team</span> •
+            Powered by QRGate Team
           </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }
