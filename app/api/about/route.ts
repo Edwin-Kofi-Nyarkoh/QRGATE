@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import MasoodImage from "@/public/masood.jpg";
+import EdwinImage from "@/public/edwin.jpg";
 
 const prisma = new PrismaClient();
 
@@ -45,8 +47,7 @@ export async function GET(request: NextRequest) {
             id: "member-1",
             name: "Masood Acheampong",
             role: "CEO & CTO",
-            image:
-              "https://res.cloudinary.com/dggaqzud0/image/upload/v1749889611/qrgate/events/ctlzalwgbcz1aodfxxir.jpg",
+            image: MasoodImage,
             bio: "Masood is the visionary behind the company.",
             order: 1,
             aboutId: "about-placeholder-id",
@@ -55,8 +56,7 @@ export async function GET(request: NextRequest) {
             id: "member-2",
             name: "Edwin Kofi Nyarkoh",
             role: "CTO",
-            image:
-              "https://res.cloudinary.com/dggaqzud0/image/upload/v1749889611/qrgate/events/ctlzalwgbcz1aodfxxir.jpg",
+            image: EdwinImage,
             bio: "Edwin leads the tech team with passion.",
             order: 2,
             aboutId: "about-placeholder-id",
