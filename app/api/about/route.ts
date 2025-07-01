@@ -64,10 +64,10 @@ export async function GET(request: NextRequest) {
           },
           {
             id: "member-3",
-            name: "Kojo Antwi",
+            name: "Francis Mensah",
             role: "Frontend Developer",
             image: Mensah,
-            bio: "Kojo brings ideas to life visually.",
+            bio: "Francis brings ideas to life visually.",
             order: 3,
             aboutId: "about-placeholder-id",
           },
