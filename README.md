@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QRGATE Ticket Booking App
+
+A modern ticket booking application with QR code generation, event management, ticket sales analytics, and security officer portal. Built with Next.js, React, Prisma, TailwindCSS, Shadcn/UI, and more.
+
+---
+
+## Folder Structure
+
+```
+QRGATE/
+│
+├── app/
+│   ├── api/
+│   │   ├── auth/
+│   │   │   └── actions.ts
+│   │   ├── cron/
+│   │   │   └── route.ts
+│   │   ├── events/
+│   │   │   └── route.ts
+│   │   └── ...
+│   ├── (dashboard)/
+│   │   └── layout.tsx
+│   ├── (organizer)/
+│   │   └── organizer/
+│   │       └── layout.tsx
+│   ├── security/
+│   │   └── [eventId]/
+│   │       └── page.tsx
+│   └── ...
+│
+├── components/
+│   ├── home/
+│   │   └── events-section.tsx
+│   ├── organizer/
+│   │   ├── security-officers-management.tsx
+│   │   ├── ticket-sales-page.tsx
+│   │   └── ...
+│   ├── dashboard/
+│   │   ├── dashboard-header.tsx
+│   │   ├── dashboard-sidebar.tsx
+│   │   ├── tickets-page.tsx
+│   │   └── ...
+│   ├── security/
+│   │   └── scan-ticket.tsx
+│   └── ...
+│
+├── lib/
+│   ├── api/
+│   │   ├── events.ts
+│   │   ├── sales.ts
+│   │   ├── orders.ts
+│   │   ├── tickets.ts
+│   │   └── ...
+│   ├── prisma.ts
+│   ├── utils.ts
+│   └── ...
+│
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+│
+├── public/
+│   ├── ... (images, icons, etc.)
+│
+├── styles/
+│   └── globals.css
+│
+├── server-cron.js
+├── .env
+├── .gitignore
+├── next.config.mjs
+├── package.json
+├── pnpm-lock.yaml
+├── postcss.config.mjs
+├── tailwind.config.ts
+├── tsconfig.json
+└── ...
+```
+
+---
+
+## Key Features
+
+- Event creation, management, and ticketing
+- QR code generation and scanning for tickets
+- Organizer and user dashboards
+- Security officer portal for ticket verification
+- Automated event status updates via cron job
+- Analytics for ticket sales and event performance
+- Mobile-responsive UI with TailwindCSS and Shadcn/UI
 
 ## Getting Started
 
-First, run the development server:
+1. **Install dependencies:**
+   ```bash
+   npm install
+   # or
+   pnpm install
+   ```
+2. **Set up your `.env` file** (see provided example)
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+4. **(Optional) Start the cron job:**
+   ```bash
+   node server-cron.js
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+See `.env` for all required configuration, including database, email, Paystack, Cloudinary, and cron secret keys.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is for educational and demonstration purposes.
