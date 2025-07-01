@@ -124,12 +124,19 @@ export function EventsPage() {
     );
   }
 
-  console.log("Ticket Types:", eventsData?.events);
-
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
+        <div className="rounded-lg bg-gradient-to-r from-primary/80 to-secondary/80 text-white p-6 mb-6 shadow-md flex flex-col items-center justify-center text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">
+            We're excited to have you here! 🎉
+          </h2>
+          <p className="text-base md:text-lg">
+            Browse, discover, and join amazing events happening around you. Your
+            next adventure starts now!
+          </p>
+        </div>
         <h1 className="text-3xl font-bold mb-2">All Events</h1>
         <p className="">Discover amazing events happening around you</p>
       </div>
